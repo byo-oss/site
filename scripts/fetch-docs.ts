@@ -2,7 +2,7 @@
 //
 //   node scripts/fetch-docs.ts                 → main of each package repo on GitHub
 //   BYO_DOCS_REF=my-branch node …              → that branch or tag instead of main
-//   BYO_DOCS_NOTIFICATIONS=~/Projects/notifications node …
+//   BYO_DOCS_NOTIFICATIONS=~/Projects/byo-notifications node …
 //                                              → a local clone (to preview unpushed docs)
 import { spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
