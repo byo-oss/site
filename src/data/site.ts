@@ -1,3 +1,5 @@
+import { resolveVersions } from "../lib/versions";
+
 export const GITHUB_ORG = "https://github.com/byo-oss";
 export const NPM_ORG = "https://www.npmjs.com/org/byo-oss";
 export const SPEC_URL = "https://github.com/byo-oss/conventions/blob/main/SPEC.md";
@@ -7,16 +9,17 @@ export type Requirement = "required" | "recommended" | "optional";
 export interface Dependency {
   name: string;
   requirement: Requirement;
+  /** Shown under the name. A peer's version range is appended from npm. */
   kind: string;
   text: string;
+  /** Read this peer dependency's range from the published package.json. */
+  peer?: boolean;
 }
 
-export interface Product {
+interface ProductSource {
   slug: string;
   name: string;
   pkg: string;
-  status: "released" | "in development";
-  version?: string;
   summary: string;
   menuText: string;
   exitTo: string[];
@@ -25,13 +28,19 @@ export interface Product {
   repo?: string;
 }
 
-export const products: Product[] = [
+export interface Product extends ProductSource {
+  status: "released" | "in development";
+  /** Latest version on npm. */
+  version?: string;
+  /** Version on main when it's ahead of npm: docs inside <Next> describe it. */
+  next?: string;
+}
+
+const sources: ProductSource[] = [
   {
     slug: "notifications",
     name: "Notifications",
     pkg: "@byo-oss/notifications",
-    status: "released",
-    version: "0.7.0",
     summary: "A bell, an inbox and email follow-up for anything that went unread. Formerly better-inbox.",
     menuText: "In-app notifications: a bell, an inbox and email follow-up.",
     exitTo: ["Knock", "Novu", "Courier"],
@@ -41,7 +50,8 @@ export const products: Product[] = [
       {
         name: "better-auth",
         requirement: "required",
-        kind: "peer · ^1.6.23",
+        kind: "peer",
+        peer: true,
         text: "Users, sessions and your database adapter. The notification table migrates with it.",
       },
       {
@@ -53,14 +63,23 @@ export const products: Product[] = [
       {
         name: "react",
         requirement: "optional",
-        kind: "peer · >=18",
+        kind: "peer",
+        peer: true,
         text: "The ./react hooks and <InboxButton />. Skip it for server-only use.",
       },
       {
         name: "@wraps.dev/email",
         requirement: "optional",
-        kind: "peer · >=0.15.0",
+        kind: "peer",
+        peer: true,
         text: "The email channel, sent through your own AWS SES account.",
+      },
+      {
+        name: "vitest",
+        requirement: "optional",
+        kind: "peer",
+        peer: true,
+        text: "Only for ./testing, which runs a custom channel's contract suite.",
       },
     ],
   },
@@ -68,7 +87,6 @@ export const products: Product[] = [
     slug: "support",
     name: "Support",
     pkg: "@byo-oss/support",
-    status: "in development",
     summary:
       "Tickets, contacts and agent replies inside your app. Contacts are your better-auth users, or an email address for people without an account.",
     menuText: "Tickets, contacts and agent replies inside your app.",
@@ -108,6 +126,22 @@ export const products: Product[] = [
   },
 ];
 
+export const products: Product[] = await Promise.all(
+  sources.map(async (source) => {
+    const v = await resolveVersions(source.pkg, source.repo);
+    return {
+      ...source,
+      status: v.latest ? "released" : "in development",
+      version: v.latest,
+      next: v.next,
+      dependencies: source.dependencies.map((d) => {
+        const range = d.peer ? v.peers[d.name] : undefined;
+        return range ? { ...d, kind: `${d.kind} · ${range}` } : d;
+      }),
+    } satisfies Product;
+  }),
+);
+
 export function reliesOnLine(product: Product): string {
   return product.dependencies
     .filter((d) => d.kind === "better-auth plugin" || d.name === "better-auth")
@@ -121,5 +155,8 @@ export function getProduct(slug: string): Product {
   return product;
 }
 
-export const docsGroups = ["get started", "guides", "reference", "operations"] as const;
-export type DocsGroup = (typeof docsGroups)[number];
+/** The product a /docs/<product>/… URL belongs to. */
+export function productFromPath(pathname: string): Product | undefined {
+  const slug = pathname.split("/")[2];
+  return products.find((p) => p.slug === slug);
+}

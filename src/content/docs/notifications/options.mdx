@@ -19,14 +19,10 @@ Pass these to `inbox(options)` in your better-auth config. Every option is optio
 | `maxAttempts` | number | `5` | Sends tried before a delivery is marked `failed` |
 | `batchSize` | number | `100` | Deliveries per `processDeliveries` call |
 | `maxFanout` | number | `1000` | Most members one organization `notify` may reach |
-| `organizationCleanup` | boolean | `true` | (0.8) Delete notifications when an org is deleted or a member is removed or leaves |
+| `organizationCleanup` | boolean | `true` | Delete notifications when an org is deleted or a member is removed or leaves |
 | `schema` | | | Rename tables and fields |
 
-<Next>
-
 `organizationCleanup: false` keeps an org's and a member's notifications when they're removed, for example for an audit trail. `deleteOrganizationData` and `deleteMemberData` still work when it's off. See [Notify an organization](/docs/notifications/organizations#cleanup).
-
-</Next>
 
 For the `schema` option, see [Schema](/docs/notifications/schema).
 

@@ -1,12 +1,26 @@
 ---
-// Content that only applies to the next, unreleased version. Collapsed while the
-// reader is on the latest docs; the version picker (or the button here) reveals it.
+// Content that only applies to the version on main, ahead of npm. Collapsed while the
+// reader is on the latest docs. Once npm catches up there is no `next`, and the content
+// renders as ordinary text: unwrap the <Next> tags in the MDX when convenient.
+import { productFromPath } from "../../data/site";
+
+const next = productFromPath(Astro.url.pathname)?.next;
 ---
 
-<div class="next-block">
-  <div class="next-head">
-    <span class="next-tag">0.8 · unreleased</span>
-    <button type="button" class="next-show" data-set-version="next">show 0.8 docs</button>
-  </div>
-  <div class="next-body"><slot /></div>
-</div>
+{
+  next ? (
+    <div class="next-block">
+      <div class="next-head">
+        <span class="next-tag">{next} · unreleased</span>
+        <button type="button" class="next-show" data-set-version="next">
+          show {next} docs
+        </button>
+      </div>
+      <div class="next-body">
+        <slot />
+      </div>
+    </div>
+  ) : (
+    <slot />
+  )
+}

@@ -29,15 +29,9 @@ type DeliveryContext = {
 
 A channel's `deliver` gets the same `{ notification, user, appUrl }` shape that `wrapsEmail` uses for its `render` function. See [Email if unread](/docs/notifications/email) for routing a type to a channel.
 
-<Next>
-
 Throw `PermanentDeliveryError` (or any error with `permanent: true`) for a send that will never succeed, such as an invalid address, a hard bounce or a revoked token. The delivery is then marked `failed` without retrying.
 
 `deliver` must not change `ctx`.
-
-</Next>
-
-<Next>
 
 ## Testing a channel
 
@@ -55,4 +49,3 @@ It checks that `deliver` resolves for full and minimal notifications and for rel
 
 `deliveryContext(overrides)` builds a sample context for your own tests. The built-in Wraps channel runs the same suite.
 
-</Next>

@@ -28,6 +28,7 @@ Props:
 - `organizationId`: show only notifications for one org.
 - `className`: classes for the wrapper.
 - `buttonClassName`: classes for the trigger. This replaces the default look.
+- `labels`: replaces any of the English strings. See [Labels](#labels).
 
 The panel opens on an **Unread** tab, which is fetched server-side with `filter: "unread"`. **All** is the second tab.
 
@@ -108,8 +109,6 @@ const router = useRouter();
 
 A working app with an end-to-end suite is in [`examples/tanstack-start`](https://github.com/byo-oss/notifications/tree/main/examples/tanstack-start).
 
-<Next>
-
 ## Labels
 
 `labels` on `InboxButton` and `InboxPanel` replaces any of the English strings. The keys are `notifications` (the bell's accessible name), `unread`, `all`, `markAllRead`, `empty`, `loadMore`, `unreadCount(count)` (announced to screen readers when the count changes), `badge(count)` (the count on the bell's badge) and `relativeTime(date)` (a notification's age under its title). Keys you leave out keep `defaultInboxLabels`.
@@ -118,4 +117,3 @@ A working app with an end-to-end suite is in [`examples/tanstack-start`](https:/
 <InboxButton client={authClient} labels={{ unread: "Ungelesen", all: "Alle", markAllRead: "Alle gelesen" }} />
 ```
 
-</Next>

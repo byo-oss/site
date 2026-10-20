@@ -61,10 +61,6 @@ Fan-out is capped at 1,000 members by default. Change it with `inbox({ maxFanout
 
 ## Cleanup
 
-<Next>
-
-### Cleanup when a member leaves or an organization is deleted
-
 The plugin cleans up after the organization plugin's own endpoints: `/organization/delete` deletes the org's notifications, and `/organization/remove-member` and `/organization/leave` delete that member's notifications in that org. Their notifications elsewhere stay. Deliveries go with their notifications. Pass `organizationCleanup: false` to keep them, for example for an audit trail.
 
 Deleting a user removes all of their rows: through foreign keys on SQL databases, and through a user-delete hook on adapters without them (memory, MongoDB).
@@ -79,7 +75,3 @@ await deleteMemberData(auth, { userId, organizationId });
 ```
 
 `organizationId` has no foreign key, because the organization plugin is optional. These functions do what a cascade would. Call them too if your own `organizationHooks` (`afterDeleteOrganization`, `afterRemoveMember`) throw: that error replaces the response the plugin reads, so its cleanup skips. A notification fanned out at the moment its org is deleted can also survive. Running `deleteOrganizationData` again is safe.
-
-</Next>
-
-In 0.7 the plugin doesn't delete an organization's or a member's notifications when they're removed. The rows stay in the `notification` table.

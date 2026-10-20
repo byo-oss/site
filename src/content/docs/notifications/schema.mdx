@@ -14,7 +14,7 @@ One row per person per notification.
 | Field | Type | Meaning |
 |-------|------|---------|
 | `id` | string | Primary key |
-| `userId` | string → `user.id` | Whose inbox it's in |
+| `userId` | string → `user.id`, cascade | Whose inbox it's in |
 | `organizationId` | string, optional | The org it was sent in. No foreign key, because the organization plugin is optional |
 | `type` | string | Your event name, e.g. `billing.payment_failed`. Picks the delivery routes |
 | `title` | string | The headline in the inbox and the email subject |
@@ -32,8 +32,8 @@ One row per notification per routed channel.
 | Field | Type | Meaning |
 |-------|------|---------|
 | `id` | string | Primary key |
-| `notificationId` | string → `notification.id` | The notification it delivers |
-| `userId` | string → `user.id` | The recipient, copied from the notification |
+| `notificationId` | string → `notification.id`, cascade | The notification it delivers |
+| `userId` | string → `user.id`, cascade | The recipient, copied from the notification |
 | `type` | string | The notification's type, for throttling |
 | `channel` | string | The channel's name in `channels` |
 | `status` | string | `pending`, `sending`, `sent`, `skipped` or `failed` |
@@ -51,17 +51,14 @@ When each user last polled the inbox, so "email if unread" knows who's in the ap
 | Field | Type | Meaning |
 |-------|------|---------|
 | `id` | string | Primary key |
-| `userId` | string → `user.id`, unique | Whose heartbeat it is |
+| `userId` | string → `user.id`, cascade, unique | Whose heartbeat it is |
 | `lastSeenAt` | date | Written at most once a minute |
 
 ## Deleting users
 
 Deleting a user removes their rows. On SQL databases this happens through the foreign keys.
 
-<Next>
+Every reference declares `onDelete: "cascade"`: `notification.userId`, `notificationDelivery.notificationId`, `notificationDelivery.userId` and `inboxPresence.userId`.
 
-In 0.8, every reference declares `onDelete: "cascade"`: `notification.userId`, `notificationDelivery.notificationId`, `notificationDelivery.userId` and `inboxPresence.userId`. better-auth's own `migrate` already cascaded. If you generate migrations with drizzle or prisma, regenerate and apply them so your foreign keys match.
+On adapters without foreign keys (memory, MongoDB), the plugin removes the rows through a user-delete hook.
 
-On adapters without foreign keys (memory, MongoDB), 0.8 also removes the rows through a user-delete hook.
-
-</Next>

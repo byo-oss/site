@@ -44,11 +44,7 @@ inbox({
 
 A channel is any object with a `deliver({ notification, user, appUrl })` method that throws on failure, so other providers are a few lines. See [Custom channels](/docs/notifications/channels).
 
-<Next>
-
 A throw retries. Throw `PermanentDeliveryError` (or any error with `permanent: true`) for a send that can never succeed, such as an invalid address, and the delivery fails at once.
-
-</Next>
 
 ## Read and seen both cancel it
 

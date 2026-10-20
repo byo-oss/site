@@ -28,5 +28,5 @@ Knock is the more direct fit. Its tenants take `organizationId` as-is, and it do
 1. **Run both.** Keep calling `auth.api.notify`, and also trigger the new tool's workflow for one `type`, behind a flag.
 2. **Backfill people.** Bulk-import users from better-auth's `user` table, and organizations as tenants from `organization`.
 3. **Cut over one `type` at a time.** Check it in the tool's activity log, then stop calling `notify` for that type and point the bell at the tool's feed component.
-4. **Keep history readable.** Leave the old inbox reachable, as an "Earlier" tab or as an export into your own archive. For the export, use `exportNotificationsData` (0.8). Keep it for as long as people need it.
+4. **Keep history readable.** Leave the old inbox reachable, as an "Earlier" tab or as an export into your own archive. For the export, use `exportNotificationsData`. Keep it for as long as people need it.
 5. **Uninstall** once nothing calls `notify` and nothing reads the old inbox. See [Uninstall](/docs/notifications/uninstall).

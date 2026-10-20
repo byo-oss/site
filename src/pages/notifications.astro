@@ -11,7 +11,7 @@ const product = getProduct("notifications");
 
 const features = [
   { title: "In your database", text: "The notification table lives in your database through better-auth's adapter. No services to deploy, no dashboard to sign up for." },
-  { title: "Addressed to users", text: "notify({ userId }) takes your better-auth user ids, not email addresses. Delete a user and their notifications cascade." },
+  { title: "Addressed to users", text: "notify({ userId }) takes your better-auth user ids, not email addresses. Delete a user and their notifications go with them." },
   { title: "Organization-aware", text: "Notify a whole org, optionally filtered by role, through the better-auth organization plugin." },
   { title: "Email when it matters", text: "Route a type to email and it goes out only if it's still unread after a delay, or right away if the user isn't in the app." },
   { title: "One component", text: "<InboxButton /> is the bell, the unread badge and the panel. Styled with shadcn variables, zero runtime dependencies." },
@@ -185,7 +185,7 @@ const outgrowSteps = [
       </div>
     </section>
 
-    <ReliesOn product={product} note="peerDependencies · @byo-oss/notifications 0.7.0" />
+    <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version}`} />
 
     <section class="section" aria-labelledby="features">
       <div class="container">

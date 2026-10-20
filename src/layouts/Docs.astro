@@ -2,7 +2,8 @@
 import type { MarkdownHeading } from "astro";
 import type { CollectionEntry } from "astro:content";
 import "../styles/docs.css";
-import { docsGroups, getProduct } from "../data/site";
+import { docsGroups } from "../data/docs";
+import { getProduct } from "../data/site";
 import Base from "./Base.astro";
 
 interface Props {
@@ -48,17 +49,23 @@ const editUrl = `https://github.com/byo-oss/site/edit/main/src/content/docs/${en
           </button>
           <div id="product-switcher" class="popover switcher-menu" hidden>
             <a href="/docs/notifications/quickstart" class="switcher-item" aria-current={product.slug === "notifications" ? "page" : undefined}>
-              <span>notifications</span><span class="faint">0.7.0</span>
+              <span>notifications</span><span class="faint">{product.version}</span>
             </a>
             <div class="switcher-item is-soon"><span>support</span><span class="badge badge-dashed">soon</span></div>
             <a href="/conventions" class="switcher-item"><span>conventions</span><span class="faint">spec</span></a>
           </div>
         </div>
 
-        <div class="version-pick" role="group" aria-label="Docs version">
-          <button type="button" data-version-pick="latest" aria-pressed="true">0.7 · latest</button>
-          <button type="button" data-version-pick="next" aria-pressed="false">0.8 · next</button>
-        </div>
+        {
+          product.version && product.next ? (
+            <div class="version-pick" role="group" aria-label="Docs version">
+              <button type="button" data-version-pick="latest" aria-pressed="true">{product.version} · latest</button>
+              <button type="button" data-version-pick="next" aria-pressed="false">{product.next} · next</button>
+            </div>
+          ) : (
+            product.version && <div class="version-pick is-single mono">v{product.version} · latest</div>
+          )
+        }
 
         <nav aria-label={`${product.name} docs`} class="side-nav">
           {
@@ -97,10 +104,14 @@ const editUrl = `https://github.com/byo-oss/site/edit/main/src/content/docs/${en
         <a href={`/${product.slug}`}>{product.slug}</a><span class="faint">/</span>
         <span>{entry.data.group}</span>
       </nav>
-      <div class="next-banner" role="note" data-pagefind-ignore>
-        You're reading the docs for 0.8.0, which isn't released yet. npm has 0.7.0.
-        <button type="button" data-set-version="latest">Back to 0.7</button>
-      </div>
+      {
+        product.version && product.next && (
+          <div class="next-banner" role="note" data-pagefind-ignore>
+            You're reading the docs for {product.next}, which isn't released yet. npm has {product.version}.
+            <button type="button" data-set-version="latest">Back to {product.version}</button>
+          </div>
+        )
+      }
       <h1 class="docs-title">{entry.data.title}</h1>
       <p class="docs-lead">{entry.data.description}</p>
       <article class="prose">

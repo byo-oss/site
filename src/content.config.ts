@@ -1,7 +1,7 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { docsGroups } from "./data/site";
+import { docsGroups } from "./data/docs";
 
 // One folder per product: src/content/docs/<product>/<slug>.mdx → /docs/<product>/<slug>
 const docs = defineCollection({
