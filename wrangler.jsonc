@@ -8,7 +8,8 @@
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
+  // A route (not a custom domain) so the zone's existing proxied DNS record keeps working.
   "routes": [
-    { "pattern": "byo.dev", "custom_domain": true }
+    { "pattern": "byo.dev/*", "zone_name": "byo.dev" }
   ]
 }

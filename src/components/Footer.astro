@@ -1,16 +1,10 @@
 ---
 import { GITHUB_ORG, NPM_ORG, products } from "../data/site";
 import Wordmark from "./Wordmark.astro";
-
-interface Props {
-  wide?: boolean;
-}
-
-const { wide = false } = Astro.props;
 ---
 
 <footer class="site-footer">
-  <div class="container footer-main" style={wide ? "max-width: 1440px" : undefined}>
+  <div class="container footer-main">
     <div style="display: flex; flex-direction: column; gap: 16px; max-width: 360px">
       <Wordmark label="BYO" />
       <p class="body muted" style="font-size: 14px">Open-source product packages for better-auth apps.</p>
@@ -29,7 +23,7 @@ const { wide = false } = Astro.props;
       </div>
     </div>
   </div>
-  <div class="container footer-legal" style={wide ? "max-width: 1440px" : undefined}>
+  <div class="container footer-legal">
     <span>Community project. Not affiliated with the better-auth team.</span>
     <span>byo.dev</span>
   </div>

@@ -1,9 +1,9 @@
 /* Docs layout: sidebar, content, on-this-page. */
 
 .docs-shell {
-  max-width: 1440px;
+  max-width: var(--container);
   margin: 0 auto;
-  padding: 0 clamp(16px, 3vw, 40px);
+  padding: 0 var(--gutter);
   display: flex;
   flex-wrap: wrap;
   align-items: flex-start;
