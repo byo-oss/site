@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "pagefind": "^1.5.2",
-    "wrangler": "^4.151.3"
+    "wrangler": "^4.151.1"
   }
 }
