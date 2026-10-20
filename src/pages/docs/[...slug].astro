@@ -1,0 +1,23 @@
+---
+import { getCollection, render } from "astro:content";
+import Callout from "../../components/docs/Callout.astro";
+import Next from "../../components/docs/Next.astro";
+import Steps from "../../components/docs/Steps.astro";
+import Table from "../../components/docs/Table.astro";
+import Docs from "../../layouts/Docs.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("docs");
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry, pages: entries.filter((e) => e.id.split("/")[0] === entry.id.split("/")[0]) },
+  }));
+}
+
+const { entry, pages } = Astro.props;
+const { Content, headings } = await render(entry);
+---
+
+<Docs entry={entry} pages={pages} headings={headings}>
+  <Content components={{ Callout, Next, Steps, table: Table }} />
+</Docs>

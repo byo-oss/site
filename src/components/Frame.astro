@@ -1,0 +1,27 @@
+---
+// The bracket frame from the BYO artwork: a scanline border with gaps cut into it.
+type Gap = { side: "top" | "bottom" | "left" | "right"; at: string };
+
+interface Props {
+  gaps?: Gap[];
+  innerClass?: string;
+  innerStyle?: string;
+}
+
+const { gaps = [], innerClass, innerStyle } = Astro.props;
+---
+
+<div class="frame scan">
+  <div class:list={["frame-inner", innerClass]} style={innerStyle}>
+    <slot />
+  </div>
+  {
+    gaps.map((g) => (
+      <div
+        class={`frame-gap ${g.side}`}
+        aria-hidden="true"
+        style={g.side === "top" || g.side === "bottom" ? `left: ${g.at}` : `top: ${g.at}`}
+      />
+    ))
+  }
+</div>

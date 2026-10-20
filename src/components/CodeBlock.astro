@@ -1,0 +1,14 @@
+---
+import { Code } from "astro:components";
+import { byoTheme, codeFrame } from "../lib/shiki.mjs";
+
+interface Props {
+  code: string;
+  lang?: string;
+  title?: string;
+}
+
+const { code, lang = "ts", title } = Astro.props;
+---
+
+<Code code={code.trim()} lang={lang as never} meta={title ? `title="${title}"` : ""} theme={byoTheme} transformers={[codeFrame()]} />

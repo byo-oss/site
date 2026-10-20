@@ -1,0 +1,12 @@
+---
+interface Props {
+  kind?: "note" | "warning";
+}
+
+const { kind = "note" } = Astro.props;
+---
+
+<div class:list={["callout", `is-${kind}`]} role="note">
+  <span class="callout-label">{kind}</span>
+  <div class="callout-body"><slot /></div>
+</div>

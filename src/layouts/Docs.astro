@@ -1,0 +1,151 @@
+---
+import type { MarkdownHeading } from "astro";
+import type { CollectionEntry } from "astro:content";
+import "../styles/docs.css";
+import { docsGroups, getProduct } from "../data/site";
+import Base from "./Base.astro";
+
+interface Props {
+  entry: CollectionEntry<"docs">;
+  pages: CollectionEntry<"docs">[];
+  headings: MarkdownHeading[];
+}
+
+const { entry, pages, headings } = Astro.props;
+const [productSlug] = entry.id.split("/");
+const product = getProduct(productSlug);
+const href = (e: CollectionEntry<"docs">) => `/docs/${e.id}`;
+
+const ordered = docsGroups.flatMap((group) =>
+  pages.filter((p) => p.data.group === group).sort((a, b) => a.data.order - b.data.order),
+);
+const groups = docsGroups
+  .map((group) => ({ group, items: ordered.filter((p) => p.data.group === group) }))
+  .filter((g) => g.items.length);
+const index = ordered.findIndex((p) => p.id === entry.id);
+const prev = ordered[index - 1];
+const next = ordered[index + 1];
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const editUrl = `https://github.com/byo-oss/site/edit/main/src/content/docs/${entry.id}.mdx`;
+---
+
+<Base title={`${entry.data.title} · ${product.name} docs`} description={entry.data.description} current="docs" docs>
+  <div class="docs-shell">
+    <aside class="docs-side" aria-label="Docs">
+      <button type="button" class="docs-menu-btn" data-docs-menu aria-expanded="false" aria-controls="docs-tree">
+        <span data-docs-menu-label>☰ menu</span>
+        <span class="faint">{entry.data.title.toLowerCase()}</span>
+      </button>
+      <div id="docs-tree" class="docs-tree">
+        <div class="popover-anchor" style="margin-bottom: 12px">
+          <button type="button" class="switcher" data-popover aria-expanded="false" aria-controls="product-switcher" aria-label={`Docs for ${product.slug}. Switch product`}>
+            <span class="switcher-glyph" aria-hidden="true">{product.name[0]}</span>
+            <span class="switcher-text">
+              <span>{product.slug}</span>
+              <span class="faint" style="font-size: 11px">{product.pkg}</span>
+            </span>
+            <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg>
+          </button>
+          <div id="product-switcher" class="popover switcher-menu" hidden>
+            <a href="/docs/notifications/quickstart" class="switcher-item" aria-current={product.slug === "notifications" ? "page" : undefined}>
+              <span>notifications</span><span class="faint">0.7.0</span>
+            </a>
+            <div class="switcher-item is-soon"><span>support</span><span class="badge badge-dashed">soon</span></div>
+            <a href="/conventions" class="switcher-item"><span>conventions</span><span class="faint">spec</span></a>
+          </div>
+        </div>
+
+        <div class="version-pick" role="group" aria-label="Docs version">
+          <button type="button" data-version-pick="latest" aria-pressed="true">0.7 · latest</button>
+          <button type="button" data-version-pick="next" aria-pressed="false">0.8 · next</button>
+        </div>
+
+        <nav aria-label={`${product.name} docs`} class="side-nav">
+          {
+            groups.map(({ group, items }) => (
+              <div class="side-group">
+                <span class="side-group-label">{group}</span>
+                <div class="side-links">
+                  {items.map((p) => (
+                    <a href={href(p)} class:list={["side-link", { "is-active": p.id === entry.id }]} aria-current={p.id === entry.id ? "page" : undefined}>
+                      {p.data.title}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))
+          }
+        </nav>
+
+        <div class="side-relies">
+          <div class="faint">relies on</div>
+          {
+            product.dependencies.map((d) => (
+              <div class="side-relies-row">
+                <span class:list={{ "is-required": d.requirement === "required" }}>{d.name}</span>
+                <span>{d.requirement === "required" ? d.kind.replace("peer · ", "") : d.requirement}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </aside>
+
+    <main id="main" class="docs-main" data-pagefind-body data-pagefind-meta={`group:${product.slug}`}>
+      <nav aria-label="Breadcrumb" class="breadcrumb" style="font-size: 12px" data-pagefind-ignore>
+        <a href="/docs/notifications/quickstart">docs</a><span class="faint">/</span>
+        <a href={`/${product.slug}`}>{product.slug}</a><span class="faint">/</span>
+        <span>{entry.data.group}</span>
+      </nav>
+      <div class="next-banner" role="note" data-pagefind-ignore>
+        You're reading the docs for 0.8.0, which isn't released yet. npm has 0.7.0.
+        <button type="button" data-set-version="latest">Back to 0.7</button>
+      </div>
+      <h1 class="docs-title">{entry.data.title}</h1>
+      <p class="docs-lead">{entry.data.description}</p>
+      <article class="prose">
+        <slot />
+      </article>
+
+      <div class="docs-foot" data-pagefind-ignore>
+        <a href={editUrl}>Edit this page on GitHub ↗</a>
+        <span>{product.pkg} {product.version}</span>
+      </div>
+      <nav class="docs-pager" aria-label="Previous and next page" data-pagefind-ignore>
+        {
+          prev ? (
+            <a href={href(prev)} class="pager-link">
+              <span class="mono faint">← previous</span>
+              <span class="mono">{prev.data.title}</span>
+            </a>
+          ) : (
+            <span />
+          )
+        }
+        {
+          next && (
+            <a href={href(next)} class="pager-link is-next">
+              <span class="mono faint">next →</span>
+              <span class="mono">{next.data.title}</span>
+            </a>
+          )
+        }
+      </nav>
+    </main>
+
+    <aside class="docs-toc" aria-label="On this page">
+      {
+        toc.length > 0 && (
+          <nav class="toc" data-toc>
+            <span class="toc-label">on this page</span>
+            {toc.map((h) => (
+              <a href={`#${h.slug}`} class={`depth-${h.depth}`}>
+                {h.text}
+              </a>
+            ))}
+          </nav>
+        )
+      }
+    </aside>
+  </div>
+</Base>

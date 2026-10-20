@@ -1,0 +1,444 @@
+---
+import Frame from "../components/Frame.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import ReliesOn from "../components/ReliesOn.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { GITHUB_ORG, getProduct } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const product = getProduct("support");
+
+const covers = [
+  { title: "Tickets and threads", text: "Requests, replies and status, scoped to your organizations." },
+  { title: "Contacts are your users", text: "No separate customer table. People without an account are an email address, linked to their user once they verify it." },
+  { title: "Agents by permission", text: "Support exports permission statements for your access-control catalog. Your app decides which roles can reply." },
+  { title: "Email in, email out", text: "Customers write in by email and agents reply from your app. Sending goes through a provider adapter, with Wraps as the default." },
+  { title: "Pluggable at the edges", text: "Storage, search and AI sit behind small adapter interfaces. Your tickets always stay in your database." },
+  { title: "Headless first", text: "Hooks own the state and the calls. Components on shadcn variables sit on top, every string overridable." },
+];
+
+const links = [
+  { label: "agent + requester alerts", target: "notifications", state: "shipped", solid: true },
+  { label: "outbound replies", target: "shared mailer", state: "proposed", solid: false },
+  { label: "ticket events", target: "activity · webhooks", state: "proposed", solid: false },
+  { label: "users · orgs · permissions", target: "better-auth", state: "your app", solid: true },
+];
+
+const tickets = [
+  {
+    id: 1042,
+    subject: "Can't reset my password",
+    from: "dana@example.com",
+    kind: "better-auth user",
+    status: "open",
+    messages: [
+      ["dana@example.com", "9:41", "The reset link says it expired, but I requested it two minutes ago."],
+      ["Agent · Lee", "9:48", "Sorry about that. I sent a fresh link. It is valid for an hour."],
+    ],
+  },
+  {
+    id: 1041,
+    subject: "Question about our invoice",
+    from: "billing@example.org",
+    kind: "email only, no account",
+    status: "open",
+    messages: [["billing@example.org", "Yesterday", "Can you add our VAT number to the October invoice?"]],
+  },
+  {
+    id: 1039,
+    subject: "Export is stuck at 90%",
+    from: "kai@example.net",
+    kind: "better-auth user",
+    status: "pending",
+    messages: [
+      ["kai@example.net", "Mon", "The CSV export has been at 90% since this morning."],
+      ["Agent · Lee", "Mon", "Looking into it now. Thanks for the heads-up."],
+    ],
+  },
+];
+---
+
+<Base title="Support" description="A help desk that lives inside your better-auth app. Tickets, contacts and agent replies in your own database. In development." current="support">
+  <div data-pagefind-body data-pagefind-meta="group:support">
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy" style="flex-basis: 420px">
+          <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>support</span></nav>
+          <div class="meta-row">
+            <span class="muted">{product.pkg}</span>
+            <span class="badge badge-dashed">in development</span>
+          </div>
+          <h1 class="h1">Support</h1>
+          <p class="tagline">A help desk that lives inside your app.</p>
+          <p class="lead" style="margin: 0; max-width: 520px">
+            Tickets, contacts and agent replies in your own database. Contacts are your better-auth users, or an email address for people who don't have
+            an account yet. Agents are whoever your permissions say they are.
+          </p>
+          <InstallTabs pkg={product.pkg} pending />
+          <div class="btn-row">
+            <a href={GITHUB_ORG} class="btn btn-solid">Follow on GitHub ↗</a>
+            <a href="#covers" class="btn">What it covers</a>
+          </div>
+        </div>
+
+        <div class="hero-art" style="flex-basis: 520px" data-pagefind-ignore>
+          <Frame gaps={[{ side: "top", at: "70%" }, { side: "left", at: "40%" }]} innerClass="desk">
+            <div class="desk-list" role="tablist" aria-label="Tickets" aria-orientation="vertical">
+              <div class="mono muted desk-list-head"><span>Open · 3</span><span>agent view</span></div>
+              {
+                tickets.map((t, i) => (
+                  <button type="button" role="tab" class="desk-ticket" id={`ticket-${t.id}`} aria-selected={i === 0 ? "true" : "false"} aria-controls={`thread-${t.id}`}>
+                    <span class="mono faint" style="font-size: 11px">#{t.id} · {t.status}</span>
+                    <span class="desk-ticket-subject">{t.subject}</span>
+                    <span class="muted" style="font-size: 12px">{t.from}</span>
+                  </button>
+                ))
+              }
+            </div>
+            <div class="desk-thread-wrap">
+              {
+                tickets.map((t, i) => (
+                  <div class="desk-thread" role="tabpanel" id={`thread-${t.id}`} aria-labelledby={`ticket-${t.id}`} hidden={i !== 0}>
+                    <div class="desk-thread-head">
+                      <span style="font-size: 15px; font-weight: 500">{t.subject}</span>
+                      <span class="mono faint" style="font-size: 11px">
+                        {t.from} · {t.kind}
+                      </span>
+                    </div>
+                    <div class="desk-messages">
+                      {t.messages.map(([who, when, text]) => (
+                        <div class="desk-message">
+                          <span class="mono faint" style="font-size: 11px">
+                            {who} · {when}
+                          </span>
+                          <span style="font-size: 14px; line-height: 1.55; color: var(--strong)">{text}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              }
+              <form class="desk-reply" onsubmit="return false">
+                <label for="desk-reply" class="mono faint" style="font-size: 11px">Reply as agent</label>
+                <textarea id="desk-reply" rows="2" placeholder="Write a reply…"></textarea>
+                <div style="display: flex; justify-content: flex-end"><button type="submit" class="btn btn-solid" style="min-height: 44px; font-size: 13px">Send reply</button></div>
+              </form>
+            </div>
+          </Frame>
+          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Concept UI. Click a ticket. The final components may differ.</p>
+        </div>
+      </div>
+    </section>
+
+    <ReliesOn product={product} note="planned · may change before 0.1" />
+
+    <section id="covers" class="section" aria-labelledby="covers-h">
+      <div class="container">
+        <SectionHead index="01" label="what it covers" title="The whole domain, at a young product's depth." id="covers-h">
+          Built to the BYO conventions from day one: your identity, your permissions, your database.
+        </SectionHead>
+        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+          {
+            covers.map((c, i) => (
+              <div class="cell">
+                <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+                <h3 class="h3">{c.title}</h3>
+                <p class="body">{c.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="fits">
+      <div class="container">
+        <SectionHead index="02" label="part of byo" title="Better with the others." id="fits">
+          Packages share one identity, one permission model and one notification path, so each one you add makes the others more useful.
+        </SectionHead>
+        <ul class="flow">
+          {
+            links.map((l) => (
+              <li class="flow-row">
+                <span class="flow-source mono">{product.pkg}</span>
+                <span class="flow-edge mono">
+                  <span class="flow-line" aria-hidden="true" />
+                  <span>{l.label}</span>
+                  <span aria-hidden="true">→</span>
+                </span>
+                <span class:list={["flow-target mono", { "is-proposed": !l.solid }]}>
+                  <span>{l.target}</span>
+                  <span class="faint" style="font-size: 11px">{l.state}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="outgrow">
+      <div class="container">
+        <SectionHead index="03" label="outgrowing this" title="A way out, planned from the start." id="outgrow">
+          When your support team outgrows a help desk inside the product, you move to a dedicated tool. Support ships with a data export in a
+          documented schema, a field mapping for the most common destination, and migration steps.
+        </SectionHead>
+        <div class="exit-grid">
+          {
+            product.exitTo.map((name) => (
+              <div class="exit-card">
+                <span class="mono" style="font-size: 20px">{name}</span>
+                <span class="mono faint" style="font-size: 12px">mapping ships with 0.1</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="follow" class="section">
+      <div class="container" style="padding-block: 96px">
+        <Frame gaps={[{ side: "top", at: "22%" }, { side: "bottom", at: "70%" }]} innerClass="follow">
+          <div class="follow-copy">
+            <div class="mono muted" style="font-size: 13px">&gt;_ building in the open</div>
+            <h2 id="follow" class="mono follow-title">Want it sooner? Shape it.</h2>
+            <p class="lead" style="margin: 0; max-width: 520px">The API is being designed in the open. Tell us how you run support today.</p>
+          </div>
+          <div class="btn-row">
+            <a href={GITHUB_ORG} class="btn btn-solid">Follow on GitHub ↗</a>
+            <a href="/notifications" class="btn">Use notifications today</a>
+          </div>
+        </Frame>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Other pages" class="container pager">
+    <a href="/notifications" class="pager-link"><span class="mono faint">← previous</span><span class="mono">Notifications</span></a>
+    <a href="/conventions" class="pager-link is-next"><span class="mono faint">next →</span><span class="mono">Conventions</span></a>
+  </nav>
+</Base>
+
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".desk-ticket")];
+
+  function select(tab: HTMLButtonElement) {
+    for (const t of tabs) {
+      const selected = t === tab;
+      t.setAttribute("aria-selected", String(selected));
+      t.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !selected;
+    }
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.tabIndex = i === 0 ? 0 : -1;
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      const step = event.key === "ArrowDown" ? 1 : event.key === "ArrowUp" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+</script>
+
+<style>
+  .hero-art :global(.desk) {
+    min-height: 500px;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .desk-list {
+    flex: 1 1 200px;
+    min-width: 0;
+    border-right: 1px solid var(--line);
+  }
+
+  .desk-list-head {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    font-size: 12px;
+  }
+
+  .desk-ticket {
+    width: 100%;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 14px 16px;
+    background: transparent;
+    color: var(--fg);
+    border: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .desk-ticket:hover {
+    background: var(--hover);
+  }
+
+  .desk-ticket[aria-selected="true"] {
+    background: var(--raise);
+    box-shadow: inset 2px 0 0 var(--fg);
+  }
+
+  .desk-ticket-subject {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .desk-thread-wrap {
+    flex: 2 1 280px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .desk-thread {
+    flex: 1;
+  }
+
+  .desk-thread[hidden] {
+    display: none;
+  }
+
+  .desk-thread-head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .desk-messages {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .desk-message {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+  }
+
+  .desk-reply {
+    margin-top: auto;
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .desk-reply textarea {
+    resize: none;
+    background: var(--panel);
+    color: var(--fg);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .flow {
+    margin: 56px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .flow-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 0;
+  }
+
+  .flow-source {
+    flex: 0 0 220px;
+    padding: 18px 20px;
+    border: 1px solid var(--fg);
+    font-size: 14px;
+  }
+
+  .flow-edge {
+    flex: 1 1 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .flow-line {
+    flex: 1;
+    border-top: 1px dashed var(--dash);
+  }
+
+  .flow-target {
+    flex: 0 0 260px;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .flow-target.is-proposed {
+    border-style: dashed;
+  }
+
+  .exit-grid {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .exit-card {
+    padding: 24px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hero-art :global(.follow),
+  :global(.follow) {
+    padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 64px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+  }
+
+  .follow-copy {
+    flex: 1 1 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .follow-title {
+    margin: 0;
+    font-size: clamp(32px, 4.2vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+</style>

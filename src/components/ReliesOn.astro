@@ -1,0 +1,34 @@
+---
+import type { Product } from "../data/site";
+
+interface Props {
+  product: Product;
+  note: string;
+}
+
+const { product, note } = Astro.props;
+const badgeClass = { required: "badge badge-solid", recommended: "badge badge-strong", optional: "badge" };
+---
+
+<section class="section relies" aria-labelledby="relies-on">
+  <div class="container">
+    <div class="relies-head">
+      <h2 id="relies-on">Relies on</h2>
+      <span class="mono faint" style="font-size: 12px">{note}</span>
+    </div>
+    <div class="cells" style="--cell-min: 220px">
+      {
+        product.dependencies.map((d) => (
+          <div class="cell">
+            <div class="relies-top">
+              <span>{d.name}</span>
+              <span class={badgeClass[d.requirement]}>{d.requirement}</span>
+            </div>
+            <span class="mono faint" style="font-size: 12px">{d.kind}</span>
+            <p class="body" style="font-size: 14px">{d.text}</p>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+</section>

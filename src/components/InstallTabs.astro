@@ -1,0 +1,44 @@
+---
+// npm / pnpm / bun switcher. The choice is remembered across pages (scripts/ui.ts).
+interface Props {
+  pkg: string;
+  pending?: boolean;
+}
+
+const { pkg, pending = false } = Astro.props;
+const managers = [
+  { id: "npm", cmd: "npm i" },
+  { id: "pnpm", cmd: "pnpm add" },
+  { id: "bun", cmd: "bun add" },
+];
+---
+
+{
+  pending ? (
+    <div class="install is-pending">
+      <div class="install-tabs" style="justify-content: space-between; padding: 0 18px; align-items: center; min-height: 40px; color: var(--faint)">
+        <span>install</span>
+        <span>not on npm yet</span>
+      </div>
+      <div class="install-cmd">
+        <span class="prompt" aria-hidden="true">$</span>
+        <span>npm i {pkg}</span>
+      </div>
+    </div>
+  ) : (
+    <div class="install" data-install data-pkg={pkg}>
+      <div class="install-tabs" role="tablist" aria-label="Package manager">
+        {managers.map((m, i) => (
+          <button type="button" role="tab" class="install-tab" aria-selected={i === 0 ? "true" : "false"} data-pm={m.id} data-cmd={m.cmd}>
+            {m.id}
+          </button>
+        ))}
+      </div>
+      <div class="install-cmd">
+        <span class="prompt" aria-hidden="true">$</span>
+        <code data-install-cmd>npm i {pkg}</code>
+        <button type="button" class="code-copy" data-copy-text={`npm i ${pkg}`} aria-label="Copy install command">copy</button>
+      </div>
+    </div>
+  )
+}

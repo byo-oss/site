@@ -1,0 +1,411 @@
+---
+import CodeBlock from "../components/CodeBlock.astro";
+import Frame from "../components/Frame.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import SectionHead from "../components/SectionHead.astro";
+import Wordmark from "../components/Wordmark.astro";
+import { GITHUB_ORG, products, reliesOnLine } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const principles = [
+  {
+    title: "Your database",
+    text: "Tables come from the plugin schema and migrate with the better-auth workflow you already run: drizzle, prisma, kysely.",
+  },
+  {
+    title: "Your users",
+    text: "Everything is addressed to better-auth users and organizations. Delete a user and their rows go with them.",
+  },
+  {
+    title: "One system",
+    text: "Every package follows the same conventions: one identity, one permission model, one way to run background work, one UI style.",
+  },
+  {
+    title: "A way out",
+    text: "Each package documents the move to the tool you'd outgrow it into, with a field mapping and migration steps.",
+  },
+];
+
+const exitSteps = [
+  { label: "run both", text: "Keep the package running while the new tool takes one type behind a flag." },
+  { label: "backfill", text: "The conventions require a data export as plain JSON, in a documented schema." },
+  { label: "cut over", text: "Your code calls a small, stable surface, so only those call sites change." },
+  { label: "uninstall", text: "Remove the plugin, drop its tables in the documented order. Nothing left behind." },
+];
+
+const preview: Record<string, { rows: [string, string][] }> = {
+  notifications: { rows: [["● Payment failed", "2m"], ["○ Invite accepted", "1h"]] },
+  support: { rows: [["#1042 Can't reset password", "open"], ["#1041 Invoice question", "solved"]] },
+};
+
+const composeCode = `import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
+import { inbox } from "@byo-oss/notifications";
+
+export const auth = betterAuth({
+  // ...your existing config
+  plugins: [
+    organization(),
+    inbox(),
+    // the next BYO package goes here
+  ],
+});`;
+---
+
+<Base title="BYO" description="Open-source notifications, support and more for better-auth apps. Libraries, not services: your app, your database, your users.">
+  <section class="section">
+    <div class="container home-hero">
+      <div class="hero-copy">
+        <div class="mono muted" style="font-size: 13px">&gt;_ bring your own</div>
+        <h1 class="home-title">The SaaS you'd rent, as plugins you own.</h1>
+        <p class="lead" style="margin: 0; font-size: 18px; max-width: 540px">
+          Open-source notifications, support and more for better-auth apps. Each package is a library, not a service: it runs in your app, keeps
+          its data in your database, and knows your users and organizations.
+        </p>
+        <InstallTabs pkg="@byo-oss/notifications" />
+        <div class="btn-row">
+          <a href="#products" class="btn btn-solid">Browse products</a>
+          <a href="/conventions" class="btn">Read the conventions</a>
+        </div>
+      </div>
+      <div class="hero-art">
+        <Frame gaps={[{ side: "top", at: "50%" }, { side: "left", at: "44%" }, { side: "bottom", at: "44%" }]} innerClass="hero-art-inner">
+          <span class="mono faint hero-art-corner tl" aria-hidden="true">&gt;_</span>
+          <span class="mono faint hero-art-corner tr" aria-hidden="true">▮▮ ▯ ▮▮▮</span>
+          <div class="hero-mark">
+            <Wordmark scale={8} label="BYO" class="hero-mark-svg" />
+            <div class="hero-mark-lines" aria-hidden="true"></div>
+          </div>
+          <span class="mono faint hero-art-corner br" aria-hidden="true">[ byo.dev ]</span>
+        </Frame>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="principles">
+    <div class="container">
+      <SectionHead index="01" label="principles" title="Libraries, not services." id="principles">
+        No dashboards to sign up for, no services to deploy. You install a package the same way you installed better-auth.
+      </SectionHead>
+      <div class="cells" style="margin-top: 56px">
+        {
+          principles.map((p, i) => (
+            <div class="cell">
+              <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+              <h3 class="h3">{p.title}</h3>
+              <p class="body">{p.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="products" class="section" aria-labelledby="products-h">
+    <div class="container">
+      <SectionHead index="02" label="products" title="One package per domain." id="products-h">
+        Each package covers its whole domain at the depth a young product needs, and is named for what it covers.
+      </SectionHead>
+      <div class="product-grid">
+        {
+          products.map((p) => (
+            <a href={`/${p.slug}`} class="product-card">
+              <div class="product-card-top">
+                <span class="mono muted" style="font-size: 12px">{p.pkg}</span>
+                {p.version ? <span class="badge badge-solid">v{p.version}</span> : <span class="badge badge-dashed">{p.status}</span>}
+              </div>
+              <div class="scan" style="padding: 10px" aria-hidden="true">
+                <div class="product-preview">
+                  {preview[p.slug]?.rows.map(([label, meta], i) => (
+                    <div class:list={["product-preview-row", { muted: i > 0 }]}>
+                      <span>{label}</span>
+                      <span class="faint">{meta}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <h3 class="product-card-title">{p.name}</h3>
+              <p class="body">{p.summary}</p>
+              <div class="product-card-foot">
+                <span class="muted">
+                  <span class="faint">relies on</span> {reliesOnLine(p)}
+                </span>
+                <span>exit → {p.exitTo.join(" · ")}</span>
+              </div>
+            </a>
+          ))
+        }
+        <a href={GITHUB_ORG} class="product-card is-next">
+          <div class="product-card-top">
+            <span class="mono muted" style="font-size: 12px">@byo-oss/…</span>
+            <span class="mono faint" style="font-size: 11px">next</span>
+          </div>
+          <div class="product-next-art" aria-hidden="true"><span>&lt; + &gt;</span></div>
+          <h3 class="product-card-title">More domains</h3>
+          <p class="body">New packages are planned in the open. Follow the org on GitHub to see what's next.</p>
+          <div class="product-card-foot"><span>github.com/byo-oss ↗</span></div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="compose">
+    <div class="container split">
+      <div class="split-text">
+        <SectionHead index="03" label="compose" title="One config. Every product." id="compose">
+          BYO packages are better-auth plugins. Add one to the plugins array you already have, run your migration, and it shares your sessions,
+          users, organizations and permissions.
+        </SectionHead>
+        <ul class="arrow-list" style="margin-top: 32px">
+          <li>Permissions, not role names. Packages export statements for your access-control catalog.</li>
+          <li>One sweep endpoint per package for background work, called from any scheduler.</li>
+          <li>Headless hooks first. Components on shadcn variables, no UI dependencies.</li>
+        </ul>
+      </div>
+      <div class="split-code">
+        <CodeBlock code={composeCode} title="lib/auth.ts" />
+        <CodeBlock code="npx @better-auth/cli migrate" lang="sh" />
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="exit">
+    <div class="container">
+      <SectionHead index="04" label="exit path" title="Built to be outgrown." id="exit">
+        BYO is the right default for a young product, and some teams outgrow it. Leaving should be a planned, boring migration, not a rewrite.
+        Every package plans for its own replacement.
+      </SectionHead>
+      <div class="table-wrap" style="margin-top: 48px">
+        <table style="min-width: 640px">
+          <thead>
+            <tr><th scope="col">package</th><th scope="col">you've outgrown it when</th><th scope="col">usual next stop</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="color: var(--fg)">notifications</td>
+              <td>You need push, SMS or chat next to in-app, or non-engineers editing templates</td>
+              <td class="mono" style="color: var(--fg)">Knock · Novu · Courier</td>
+            </tr>
+            <tr>
+              <td class="mono" style="color: var(--fg)">support</td>
+              <td>Your support team outgrows a help desk that lives inside the product</td>
+              <td class="mono" style="color: var(--fg)">Zendesk · Intercom · Front</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="cells" style="margin-top: 48px; --cell-min: 220px">
+        {
+          exitSteps.map((s, i) => (
+            <div class="cell" style="padding: 28px 24px">
+              <div class="cell-index">
+                {String(i + 1).padStart(2, "0")} / {s.label}
+              </div>
+              <p class="body">{s.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="cta">
+    <div class="container" style="padding-block: 96px">
+      <Frame gaps={[{ side: "top", at: "78%" }, { side: "right", at: "58%" }]} innerClass="cta-inner">
+        <div class="mono muted" style="font-size: 13px">&gt;_</div>
+        <h2 id="cta" class="cta-title">Own the boring parts.</h2>
+        <p class="lead" style="margin: 0; max-width: 520px">Ship the inbox your users expect this afternoon, in the database you already back up.</p>
+        <div class="btn-row">
+          <a href="/notifications" class="btn btn-solid">Start with notifications</a>
+          <a href={GITHUB_ORG} class="btn">GitHub ↗</a>
+        </div>
+      </Frame>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .home-hero {
+    padding-block: clamp(56px, 8vw, 104px) clamp(56px, 7vw, 96px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 56px;
+  }
+
+  .home-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(40px, 5.4vw, 70px);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  .hero-art :global(.hero-art-inner) {
+    min-height: clamp(300px, 38vw, 470px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+
+  .hero-art-corner {
+    position: absolute;
+    font-size: 12px;
+  }
+
+  .hero-art-corner.tl {
+    top: 18px;
+    left: 20px;
+  }
+
+  .hero-art-corner.tr {
+    top: 18px;
+    right: 20px;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-art-corner.br {
+    bottom: 16px;
+    right: 20px;
+    font-size: 11px;
+  }
+
+  .hero-mark {
+    position: relative;
+    width: 100%;
+    max-width: 392px;
+  }
+
+  .hero-mark :global(.hero-mark-svg) {
+    width: 100%;
+    height: auto;
+    color: var(--fg);
+  }
+
+  .hero-mark-lines {
+    position: absolute;
+    inset: 46% 0 0;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(0deg, var(--lines) 0 2px, transparent 2px 4px);
+  }
+
+  .product-grid {
+    margin-top: 56px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .product-card {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 28px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--fg);
+    transition: background-color 0.15s;
+  }
+
+  .product-card:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+
+  .product-card.is-next {
+    border-style: dashed;
+  }
+
+  .product-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .product-preview {
+    background: var(--bg);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+
+  .product-preview-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .product-card-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 26px;
+    letter-spacing: -0.02em;
+  }
+
+  .product-card-foot {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px dashed var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--faint);
+  }
+
+  .product-next-art {
+    flex: 1;
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px dashed var(--border);
+    font-family: var(--font-mono);
+    font-size: 28px;
+    color: var(--faint);
+  }
+
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 56px;
+    align-items: flex-start;
+  }
+
+  .split-text {
+    flex: 1 1 380px;
+    min-width: 0;
+  }
+
+  .split-code {
+    flex: 1 1 520px;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section :global(.cta-inner),
+  :global(.cta-inner) {
+    padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 64px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .cta-title {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: clamp(34px, 4.6vw, 60px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+</style>

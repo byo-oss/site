@@ -1,0 +1,495 @@
+---
+import CodeBlock from "../components/CodeBlock.astro";
+import Frame from "../components/Frame.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import ReliesOn from "../components/ReliesOn.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { getProduct } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const product = getProduct("notifications");
+
+const features = [
+  { title: "In your database", text: "The notification table lives in your database through better-auth's adapter. No services to deploy, no dashboard to sign up for." },
+  { title: "Addressed to users", text: "notify({ userId }) takes your better-auth user ids, not email addresses. Delete a user and their notifications cascade." },
+  { title: "Organization-aware", text: "Notify a whole org, optionally filtered by role, through the better-auth organization plugin." },
+  { title: "Email when it matters", text: "Route a type to email and it goes out only if it's still unread after a delay, or right away if the user isn't in the app." },
+  { title: "One component", text: "<InboxButton /> is the bell, the unread badge and the panel. Styled with shadcn variables, zero runtime dependencies." },
+  { title: "Headless if you want", text: "useInbox owns the state and the calls. Anything the component does, the hook can do in your own UI." },
+];
+
+const inbox = [
+  { title: "Payment failed", body: "Your card was declined. Update billing to keep your plan.", type: "billing.payment_failed", age: "2m", unread: true },
+  { title: "Sam replied to your comment", body: 'On "Q4 launch checklist"', type: "comment.reply", age: "18m", unread: true },
+  { title: "New sign-in", body: "Firefox on Linux. Not you? Review your sessions.", type: "security.new_login", age: "1h", unread: false },
+  { title: "You joined Acme", body: "An owner added you to the organization.", type: "org.member_added", age: "1d", unread: false },
+];
+
+const steps = [
+  {
+    title: "Add the plugin",
+    text: "To the better-auth config you already have.",
+    file: "lib/auth.ts",
+    code: `import { betterAuth } from "better-auth";
+import { inbox } from "@byo-oss/notifications";
+
+export const auth = betterAuth({
+  // ...your existing config
+  plugins: [inbox()],
+});`,
+  },
+  {
+    title: "Migrate",
+    text: "The plugin declares the notification table. Your existing workflow creates it: migrate, or generate for drizzle and prisma.",
+    lang: "sh",
+    code: "npx @better-auth/cli migrate --config lib/auth.ts",
+  },
+  {
+    title: "Add the client plugin",
+    text: "So the browser can list and mark notifications.",
+    file: "lib/auth-client.ts",
+    code: `import { createAuthClient } from "better-auth/react";
+import { inboxClient } from "@byo-oss/notifications/client";
+
+export const authClient = createAuthClient({
+  plugins: [inboxClient()],
+});`,
+  },
+  {
+    title: "Drop in the component",
+    text: "Anywhere in a client component, like your navbar.",
+    file: "components/navbar.tsx",
+    lang: "tsx",
+    code: `"use client";
+import { InboxButton } from "@byo-oss/notifications/react";
+import { authClient } from "@/lib/auth-client";
+
+export function Navbar() {
+  return <InboxButton client={authClient} />;
+}`,
+  },
+  {
+    title: "Send one",
+    text: "From any server code: a server action, a webhook handler, a cron job. notify is server-only and never exposed as an HTTP route.",
+    file: "app/actions.ts",
+    code: `await auth.api.notify({
+  body: {
+    userId: comment.authorId,
+    type: "comment.reply",
+    title: \`\${user.name} replied to your comment\`,
+    href: \`/posts/\${post.id}#comment-\${comment.id}\`,
+  },
+});`,
+  },
+];
+
+const emailCode = `import { inbox } from "@byo-oss/notifications";
+import { wrapsEmail } from "@byo-oss/notifications/wraps";
+
+inbox({
+  appUrl: "https://app.acme.com",
+  channels: {
+    email: wrapsEmail({ from: "Acme <notify@acme.com>" }),
+  },
+  routes: {
+    // email after 15 minutes if still unread
+    "billing.payment_failed": [{ channel: "email", ifUnreadAfter: { minutes: 15 } }],
+    // in-app and email, both right away
+    "security.new_login": [{ channel: "email", cancelIfRead: false }],
+  },
+});`;
+
+const mapping = [
+  ["user.id, user.email", "user id, email", "subscriberId, email"],
+  ["organizationId", "tenant id", "tenant context"],
+  ["type", "workflow key", "workflowId"],
+  ["title, body, href, data", "trigger data", "trigger payload"],
+];
+
+const outgrowSteps = [
+  ["run both", "Keep calling notify, and trigger the new tool for one type behind a flag."],
+  ["backfill people", "Bulk-import users, and organizations as tenants."],
+  ["cut over", "One type at a time, then point the bell at the tool's feed."],
+  ["keep history", "Leave the old inbox readable for as long as people need it."],
+  ["uninstall", "Once nothing calls notify and nothing reads the old inbox."],
+];
+---
+
+<Base title="Notifications" description="In-app notifications for better-auth apps that live in your database. One plugin, one migration, one component." current="notifications">
+  <div data-pagefind-body data-pagefind-meta="group:notifications">
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy">
+          <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>notifications</span></nav>
+          <div class="meta-row">
+            <span class="muted">{product.pkg}</span>
+            <span class="badge badge-solid">v{product.version}</span>
+            <span class="badge">plugin · inbox()</span>
+          </div>
+          <h1 class="h1">Notifications</h1>
+          <p class="tagline">In-app notifications that live in your database.</p>
+          <p class="lead" style="margin: 0; max-width: 540px">
+            One plugin, one migration, one component. Notifications are addressed to your better-auth users, scoped to your organizations, and emailed
+            only when nobody has read them in the app. Formerly better-inbox: same API, new imports.
+          </p>
+          <InstallTabs pkg={product.pkg} />
+          <div class="btn-row">
+            <a href="/docs/notifications/quickstart" class="btn btn-solid">Read the docs</a>
+            <a href={product.repo} class="btn">GitHub ↗</a>
+            <a href="https://www.npmjs.com/package/@byo-oss/notifications" class="btn">npm ↗</a>
+          </div>
+        </div>
+
+        <div class="hero-art" data-pagefind-ignore>
+          <Frame gaps={[{ side: "top", at: "30%" }, { side: "right", at: "72%" }]} innerStyle="min-height: 520px; display: flex; flex-direction: column">
+            <div class="demo-bar">
+              <div class="mono muted demo-app"><span aria-hidden="true" class="demo-logo"></span>acme / dashboard</div>
+              <button type="button" class="icon-btn demo-bell" data-demo-bell aria-expanded="true" aria-controls="demo-inbox" aria-label="Notifications, 2 unread">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" aria-hidden="true">
+                  <path d="M6 9a6 6 0 1 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9z"></path>
+                  <path d="M10 20.5a2.2 2.2 0 0 0 4 0"></path>
+                </svg>
+                <span class="demo-badge" data-demo-badge>2</span>
+              </button>
+            </div>
+            <div id="demo-inbox" class="demo-panel">
+              <div class="demo-panel-head">
+                <span class="mono" style="font-size: 13px; font-weight: 500">Inbox</span>
+                <button type="button" class="demo-mark mono" data-demo-mark>Mark all read</button>
+              </div>
+              <ul class="demo-list">
+                {
+                  inbox.map((n) => (
+                    <li class="demo-item" data-unread={n.unread ? "" : undefined}>
+                      <span class="demo-dot" aria-hidden="true" />
+                      <div class="demo-item-body">
+                        <div class="demo-item-top">
+                          <span class="demo-item-title">
+                            {n.title}
+                            {n.unread && <span class="sr-only demo-unread-label"> (unread)</span>}
+                          </span>
+                          <span class="mono faint" style="font-size: 11px">{n.age}</span>
+                        </div>
+                        <span class="muted" style="font-size: 13px; line-height: 1.5">{n.body}</span>
+                        <span class="mono faint" style="font-size: 11px">{n.type}</span>
+                      </div>
+                    </li>
+                  ))
+                }
+              </ul>
+              <div class="mono faint" style="padding: 12px 16px; font-size: 11px">&lt;InboxButton /&gt; · shadcn variables</div>
+            </div>
+          </Frame>
+          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Try it: the bell and "Mark all read" work.</p>
+        </div>
+      </div>
+    </section>
+
+    <ReliesOn product={product} note="peerDependencies · @byo-oss/notifications 0.7.0" />
+
+    <section class="section" aria-labelledby="features">
+      <div class="container">
+        <SectionHead index="01" label="what you get" title="A plugin, not a platform." id="features" />
+        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+          {
+            features.map((f, i) => (
+              <div class="cell">
+                <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+                <h3 class="h3">{f.title}</h3>
+                <p class="body">{f.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section" aria-labelledby="qs">
+      <div class="container">
+        <SectionHead index="02" label="quickstart" title="Five steps. One afternoon." id="qs">
+          If you already run better-auth, you already have everything this needs.
+        </SectionHead>
+        <ol class="qs-list">
+          {
+            steps.map((s, i) => (
+              <li class="qs-step">
+                <div class="qs-text">
+                  <div class="mono faint" style="font-size: 12px">step {String(i + 1).padStart(2, "0")}</div>
+                  <h3 class="mono" style="margin: 10px 0 8px; font-size: 20px">{s.title}</h3>
+                  <p class="body">{s.text}</p>
+                </div>
+                <div class="qs-code">
+                  <CodeBlock code={s.code} lang={s.lang ?? "ts"} title={s.file} />
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <a href="/docs/notifications/quickstart" class="btn" style="margin-top: 32px">Full quickstart in the docs →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="email">
+      <div class="container split">
+        <div class="split-text">
+          <SectionHead index="03" label="email" title="Email is the follow-up, not the default." id="email">
+            The in-app row is always written. Route a type to email and it's sent only if nobody read or saw it first, through your own AWS SES
+            account with the Wraps adapter.
+          </SectionHead>
+          <ul class="arrow-list" style="margin-top: 24px">
+            <li>ifUnreadAfter: wait, then send if still unread</li>
+            <li>cancelIfRead: false to always send</li>
+            <li>throttle: at most one email per window</li>
+          </ul>
+        </div>
+        <div class="split-code">
+          <CodeBlock code={emailCode} title="lib/auth.ts" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="system">
+      <div class="container">
+        <SectionHead index="04" label="part of byo" title="Built to the conventions." id="system" />
+        <div class="cells" style="margin-top: 56px">
+          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">identity</div><p class="body">better-auth users and organizations. No separate subscriber table to keep in sync.</p></div>
+          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">access</div><p class="body">notify is server-only. People list and mark only their own rows.</p></div>
+          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">background work</div><p class="body">One sweep endpoint, processDeliveries, called from any scheduler. At-least-once delivery.</p></div>
+          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">other packages</div><p class="body">Proposed: every BYO package notifies through this inbox, so preferences live in one place.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="outgrow">
+      <div class="container">
+        <SectionHead index="05" label="outgrowing this" title="When it's time for Knock or Novu." id="outgrow">
+          You've outgrown it when you need push, SMS or chat next to in-app, a preference center and digests across channels, non-engineers editing
+          templates, or realtime delivery to thousands of concurrent users. Moving is a forward cutover, and your notification table stays the
+          archive.
+        </SectionHead>
+        <div class="table-wrap" style="margin-top: 48px">
+          <table class="mono" style="min-width: 680px">
+            <thead><tr><th scope="col">here</th><th scope="col">knock</th><th scope="col">novu</th></tr></thead>
+            <tbody>
+              {
+                mapping.map(([here, knock, novu]) => (
+                  <tr>
+                    <td style="color: var(--fg)">{here}</td>
+                    <td>{knock}</td>
+                    <td>{novu}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <ol class="cells" style="margin: 48px 0 0; padding: 0; list-style: none; --cell-min: 200px">
+          {
+            outgrowSteps.map(([label, text], i) => (
+              <li class="cell" style="padding: 24px 22px">
+                <div class="cell-index">
+                  {String(i + 1).padStart(2, "0")} / {label}
+                </div>
+                <p class="body" style="font-size: 14px">{text}</p>
+              </li>
+            ))
+          }
+        </ol>
+        <a href="/docs/notifications/outgrowing" class="btn" style="margin-top: 32px">Full migration guide →</a>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Other pages" class="container pager">
+    <a href="/#products" class="pager-link"><span class="mono faint">← all products</span><span class="mono">byo.dev</span></a>
+    <a href="/support" class="pager-link is-next"><span class="mono faint">next →</span><span class="mono">Support</span></a>
+  </nav>
+</Base>
+
+<script>
+  const bell = document.querySelector<HTMLButtonElement>("[data-demo-bell]");
+  const panel = document.getElementById("demo-inbox");
+  const badge = document.querySelector<HTMLElement>("[data-demo-badge]");
+  const mark = document.querySelector<HTMLButtonElement>("[data-demo-mark]");
+
+  bell?.addEventListener("click", () => {
+    const open = bell.getAttribute("aria-expanded") !== "true";
+    bell.setAttribute("aria-expanded", String(open));
+    if (panel) panel.hidden = !open;
+  });
+
+  mark?.addEventListener("click", () => {
+    document.querySelectorAll("#demo-inbox [data-unread]").forEach((item) => item.removeAttribute("data-unread"));
+    document.querySelectorAll("#demo-inbox .demo-unread-label").forEach((label) => label.remove());
+    badge?.remove();
+    bell?.setAttribute("aria-label", "Notifications, 0 unread");
+  });
+</script>
+
+<style>
+  .hero-art {
+    flex: 1 1 440px;
+    min-width: 0;
+  }
+
+  .demo-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .demo-app {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+  }
+
+  .demo-logo {
+    width: 18px;
+    height: 18px;
+    background: var(--border);
+  }
+
+  .demo-bell {
+    position: relative;
+  }
+
+  .demo-badge {
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    background: var(--fg);
+    color: var(--bg);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .demo-panel {
+    margin: 12px 16px 16px auto;
+    width: min(380px, calc(100% - 32px));
+    border: 1px solid var(--border);
+    background: var(--panel);
+  }
+
+  .demo-panel[hidden] {
+    display: none;
+  }
+
+  .demo-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6px 0 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .demo-mark {
+    min-height: 44px;
+    padding: 0 12px;
+    background: transparent;
+    border: 0;
+    color: var(--text-2);
+    font-size: 12px;
+  }
+
+  .demo-mark:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+
+  .demo-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .demo-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .demo-dot {
+    flex: none;
+    width: 8px;
+    height: 8px;
+    margin-top: 6px;
+  }
+
+  .demo-item[data-unread] .demo-dot {
+    background: var(--fg);
+  }
+
+  .demo-item-body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .demo-item-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .demo-item-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .qs-list {
+    margin: 56px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .qs-step {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 48px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .qs-text {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+
+  .qs-code {
+    flex: 2 1 520px;
+    min-width: 0;
+  }
+
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 56px;
+    align-items: flex-start;
+  }
+
+  .split-text {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+
+  .split-code {
+    flex: 1 1 560px;
+    min-width: 0;
+  }
+</style>

@@ -1,0 +1,68 @@
+---
+import "../styles/global.css";
+import Footer from "../components/Footer.astro";
+import Header from "../components/Header.astro";
+import Search from "../components/Search.astro";
+
+interface Props {
+  title: string;
+  description: string;
+  current?: "notifications" | "support" | "conventions" | "docs";
+  docs?: boolean;
+}
+
+const { title, description, current, docs = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const fullTitle = title === "BYO" ? "BYO: the SaaS you'd rent, as plugins you own" : `${title} · BYO`;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content="#111111" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="BYO" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL("/og-image.png", Astro.site)} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      // Before first paint: apply the saved theme and docs version so nothing flashes.
+      try {
+        const theme = localStorage.getItem("byo-theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.version = localStorage.getItem("byo-docs-version") === "next" ? "next" : "latest";
+      } catch {
+        document.documentElement.dataset.version = "latest";
+      }
+    </script>
+  </head>
+  <body>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <Header current={current} docs={docs} />
+    {
+      docs ? (
+        <slot />
+      ) : (
+        <main id="main">
+          <slot />
+        </main>
+      )
+    }
+    <Footer wide={docs} />
+    <Search />
+    <script>
+      import "../scripts/ui.ts";
+    </script>
+  </body>
+</html>
