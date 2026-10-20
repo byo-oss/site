@@ -6,11 +6,11 @@ import Base from "../layouts/Base.astro";
 
 const rules = [
   ["Naming and packaging", "1-naming-and-packaging", "The @byo-oss scope, one package per domain, subpath exports for client, react and providers."],
-  ["Plugin shape", "2-plugin-shape-plugin", "The plugin id doubles as the endpoint prefix. Renamable schema, typed error codes, misconfiguration fails at boot."],
+  ["Plugin shape", "2-plugin-shape-plugin", "The plugin id doubles as the endpoint prefix. Renamable schema, typed error codes, misconfiguration fails at boot, and queries that hold on every adapter, D1 included."],
   ["Identity", "3-identity", "People are better-auth users, tenants are organizations. No package keeps its own user table."],
   ["Access and permissions", "4-access-and-permissions", "Every endpoint is server-only, own-rows or permission-gated. Packages check permissions, never role names."],
   ["Background work", "5-background-work", "One sweep endpoint per package, called from any scheduler. Leased claims, backoff, at-least-once."],
-  ["Data lifecycle", "6-data-lifecycle", "Deleting a user, an organization or a membership removes what the package holds about them."],
+  ["Data lifecycle", "6-data-lifecycle", "Deleting a user, an organization or a membership removes what the package holds about them, on adapters with or without foreign keys."],
   ["UI", "7-ui-when-theres-a-react-export", "Headless hooks first. Components on shadcn variables, keyboard-ready, every string overridable."],
   ["Docs and tests", "8-docs-and-tests", "One README outline, an AGENTS.md for coding agents, tests against a real better-auth instance."],
   ["Exit path", "9-exit-path", 'An "Outgrowing this" section, a documented schema, a data export, and uninstall steps.'],
