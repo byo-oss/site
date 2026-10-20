@@ -26,7 +26,8 @@ Package versions and peer ranges are never typed in: `src/lib/versions.ts` reads
 | Path | What |
 |---|---|
 | `src/data/site.ts` | Products: name, package, blurbs, what each relies on. Version and status come from npm at build. The header menu, home cards, product pages and docs sidebar read from it |
-| `src/content/docs/<product>/<slug>.mdx` | Docs pages, served at `/docs/<product>/<slug>`. Frontmatter: `title`, `description`, `group` (`get started`, `guides`, `reference`, `operations`), `order` |
+| `docs/*.mdx` in each package repo | Docs pages, served at `/docs/<product>/<slug>`. `scripts/fetch-docs.ts` copies them from each repo's `main` into `src/content/docs/<product>/` (gitignored) before every dev and build. The format is in each repo's `docs/README.md` |
+| `src/data/docs.ts` | Which repo each product's docs come from |
 | `src/components/docs/` | MDX components available without imports: `<Callout kind="note">`, `<Next>` (unreleased-version content), `<Steps>` |
 | `src/styles/global.css` | Tokens for both themes, base styles, shared components |
 | `src/scripts/ui.ts` | Theme toggle, menus, ⌘K search, copy buttons, install tabs, docs version picker |
@@ -35,5 +36,7 @@ Package versions and peer ranges are never typed in: `src/lib/versions.ts` reads
 Code fences take a `title` for the frame tab: ```` ```ts title="lib/auth.ts" ````.
 
 Docs describe the latest npm release. Anything only on the package's `main` goes inside `<Next>`, collapsed until the reader picks the next version. Once npm catches up, `<Next>` content renders as plain text; unwrap it at the next docs pass.
+
+To preview docs you haven't pushed, point the fetch at a local clone: `BYO_DOCS_NOTIFICATIONS=../notifications pnpm dev`. `BYO_DOCS_REF=<branch>` builds from a pushed branch instead of `main`.
 
 Community project. Not affiliated with the better-auth team.

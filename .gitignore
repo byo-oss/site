@@ -4,3 +4,6 @@ dist/
 .wrangler/
 .env*
 .DS_Store
+
+# Fetched from each package repo at build (scripts/fetch-docs.ts)
+src/content/docs/*/

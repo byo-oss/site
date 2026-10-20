@@ -4,8 +4,9 @@
   "type": "module",
   "packageManager": "pnpm@12.14.0",
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build && pagefind --site dist",
+    "docs:fetch": "node scripts/fetch-docs.ts",
+    "dev": "pnpm docs:fetch && astro dev",
+    "build": "pnpm docs:fetch && astro build && pagefind --site dist",
     "preview": "pnpm build && wrangler dev",
     "deploy": "pnpm build && wrangler deploy",
     "check": "astro check"

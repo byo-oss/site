@@ -2,7 +2,7 @@
 import type { MarkdownHeading } from "astro";
 import type { CollectionEntry } from "astro:content";
 import "../styles/docs.css";
-import { docsGroups } from "../data/docs";
+import { docsEditUrl, docsGroups } from "../data/docs";
 import { getProduct } from "../data/site";
 import Base from "./Base.astro";
 
@@ -27,7 +27,7 @@ const index = ordered.findIndex((p) => p.id === entry.id);
 const prev = ordered[index - 1];
 const next = ordered[index + 1];
 const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
-const editUrl = `https://github.com/byo-oss/site/edit/main/src/content/docs/${entry.id}.mdx`;
+const editUrl = docsEditUrl(productSlug, entry.id.split("/").slice(1).join("/"));
 ---
 
 <Base title={`${entry.data.title} · ${product.name} docs`} description={entry.data.description} current="docs" docs>
@@ -119,7 +119,7 @@ const editUrl = `https://github.com/byo-oss/site/edit/main/src/content/docs/${en
       </article>
 
       <div class="docs-foot" data-pagefind-ignore>
-        <a href={editUrl}>Edit this page on GitHub ↗</a>
+        {editUrl && <a href={editUrl}>Edit this page on GitHub ↗</a>}
         <span>{product.pkg} {product.version}</span>
       </div>
       <nav class="docs-pager" aria-label="Previous and next page" data-pagefind-ignore>
