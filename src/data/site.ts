@@ -128,9 +128,9 @@ const sources: ProductSource[] = [
     slug: "mailer",
     name: "Mailer",
     pkg: "@byo-oss/mailer",
-    summary: "The shared email sender for BYO packages, with Wraps, AWS SES and email-sdk adapters.",
-    menuText: "One email-sender interface for BYO packages.",
-    exitTo: [],
+    summary: "One email-sender interface for BYO packages. Send through Wraps, your own SES client, or any provider email-sdk can carry replies through.",
+    menuText: "The email sender BYO packages share: Wraps, SES or email-sdk.",
+    exitTo: ["your provider's SDK"],
     docsHref: "/docs/mailer/introduction",
     repo: "https://github.com/byo-oss/mailer",
     dependencies: [
@@ -138,19 +138,29 @@ const sources: ProductSource[] = [
         name: "@wraps.dev/email",
         requirement: "optional",
         kind: "peer",
-        text: "wrapsMailer: send through your own AWS SES account.",
+        peer: true,
+        text: "wrapsMailer: send through your own AWS SES account. The default for BYO packages.",
       },
       {
         name: "@aws-sdk/client-sesv2",
         requirement: "optional",
         kind: "peer",
+        peer: true,
         text: "sesMailer: send through an SESv2Client your app already has.",
       },
       {
         name: "@opencoredev/email-sdk",
         requirement: "optional",
         kind: "peer",
-        text: "emailSdkMailer: Resend, Postmark, SendGrid, SMTP and more.",
+        peer: true,
+        text: "emailSdkMailer: Resend, Postmark, SendGrid, SMTP and more, through a client you build.",
+      },
+      {
+        name: "vitest",
+        requirement: "optional",
+        kind: "peer",
+        peer: true,
+        text: "The ./testing contract suite, for adapters you write.",
       },
     ],
   },
@@ -176,7 +186,7 @@ export function reliesOnLine(product: Product): string {
   return product.dependencies
     .filter((d) => d.kind === "better-auth plugin" || d.name === "better-auth")
     .map((d) => (d.requirement === "required" ? d.name : `${d.name} (${d.requirement})`))
-    .join(" · ");
+    .join(" · ") || "nothing required";
 }
 
 export function getProduct(slug: string): Product {

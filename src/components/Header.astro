@@ -2,7 +2,7 @@
 import { GITHUB_ORG, products } from "../data/site";
 import Wordmark from "./Wordmark.astro";
 
-type Current = "notifications" | "support" | "conventions" | "docs";
+type Current = "notifications" | "support" | "mailer" | "conventions" | "docs";
 
 interface Props {
   current?: Current;
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const { current, docs = false } = Astro.props;
-const productCurrent = current === "notifications" || current === "support";
+const productCurrent = products.some((p) => p.slug === current);
 ---
 
 <header class:list={["site-header", { "is-docs": docs }]}>

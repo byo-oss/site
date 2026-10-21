@@ -1,0 +1,455 @@
+---
+import CodeBlock from "../components/CodeBlock.astro";
+import Frame from "../components/Frame.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import ReliesOn from "../components/ReliesOn.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { getProduct } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const product = getProduct("mailer");
+
+const features = [
+  { title: "One interface", text: "mailer.send({ to, subject, html, text, replyTo?, headers? }). A BYO package takes a Mailer and never imports a provider SDK." },
+  { title: "Your provider", text: "Wraps, your own SES client, or a client built with email-sdk. Each adapter is its own subpath with an optional peer dependency." },
+  { title: "Retry or fail", text: "A throw means try again later. A PermanentMailError means the send can never succeed, so the caller marks it failed." },
+  { title: "Replies that thread", text: "replyTo is its own field and In-Reply-To and References pass through as headers. Headers the provider owns are rejected." },
+  { title: "The real Message-ID", text: "wrapsMailer and sesMailer return the Message-ID SES actually sent, in us-east-1, so the next reply can thread." },
+  { title: "One contract", text: "Every first-party adapter runs the testMailer suite. memoryMailer records messages for your own tests." },
+];
+
+const adapters = [
+  {
+    key: "wraps",
+    name: "wrapsMailer",
+    from: "@byo-oss/mailer/wraps",
+    note: "AWS SES through @wraps.dev/email. The default.",
+    code: `import { wrapsMailer } from "@byo-oss/mailer/wraps";
+
+export const mailer = wrapsMailer({
+  from: "Acme Support <help@acme.com>",
+});`,
+  },
+  {
+    key: "ses",
+    name: "sesMailer",
+    from: "@byo-oss/mailer/ses",
+    note: "An SESv2Client your app already has.",
+    code: `import { SESv2Client } from "@aws-sdk/client-sesv2";
+import { sesMailer } from "@byo-oss/mailer/ses";
+
+export const mailer = sesMailer({
+  from: "Acme Support <help@acme.com>",
+  client: new SESv2Client({ region: "us-east-1" }),
+});`,
+  },
+  {
+    key: "email-sdk",
+    name: "emailSdkMailer",
+    from: "@byo-oss/mailer/email-sdk",
+    note: "Resend, Postmark, SendGrid, SMTP and more.",
+    code: `import { createEmailClient } from "@opencoredev/email-sdk";
+import { resend } from "@opencoredev/email-sdk/resend";
+import { emailSdkMailer } from "@byo-oss/mailer/email-sdk";
+
+export const mailer = emailSdkMailer({
+  from: "Acme Support <help@acme.com>",
+  client: createEmailClient({
+    adapters: [resend({ apiKey: process.env.RESEND_API_KEY! })],
+    telemetry: false,
+  }),
+});`,
+  },
+  {
+    key: "memory",
+    name: "memoryMailer",
+    from: "@byo-oss/mailer",
+    note: "Records messages instead of sending. For tests.",
+    code: `import { memoryMailer } from "@byo-oss/mailer";
+
+const mailer = memoryMailer();
+await doSomethingThatSendsMail(mailer);
+expect(mailer.sent[0]?.to).toBe("alice@example.com");`,
+  },
+];
+
+const steps = [
+  {
+    title: "Install",
+    text: "The mailer, plus the SDK for the adapter you use. Every provider SDK is an optional peer dependency.",
+    lang: "sh",
+    code: "npm install @byo-oss/mailer @wraps.dev/email",
+  },
+  {
+    title: "Create a mailer",
+    text: "From a server file. The sender address, or its domain, must be verified with your provider.",
+    file: "lib/mailer.ts",
+    code: adapters[0].code,
+  },
+  {
+    title: "Hand it to the package that sends mail",
+    text: "BYO packages that send email take a mailer option.",
+    file: "lib/auth.ts",
+    code: `import { support } from "@byo-oss/support";
+import { mailer } from "./mailer";
+
+betterAuth({ plugins: [support({ mailer /* ... */ })] });`,
+  },
+  {
+    title: "Or call it yourself",
+    text: "replyTo goes to the provider's reply-to option, never into headers.",
+    file: "app/actions.ts",
+    code: `const { id, messageId } = await mailer.send({
+  to: "alice@example.com",
+  subject: "Your ticket was updated",
+  html: "<p>We replied to your ticket.</p>",
+  text: "We replied to your ticket.",
+  replyTo: "support+t0k3n@reply.acme.com",
+});`,
+  },
+];
+
+const errorCode = `import { isPermanentMailError } from "@byo-oss/mailer";
+
+try {
+  await mailer.send(message);
+} catch (error) {
+  if (isPermanentMailError(error)) {
+    // rejected for good: mark it failed
+  } else {
+    // anything else: try again later
+  }
+}`;
+
+const errors = [
+  ["wrapsMailer", "validation error, MessageRejected, InvalidParameterValue", "throttling, network, credentials, unverified sender"],
+  ["sesMailer", "BadRequestException, MessageRejected", "unverified address or sandbox, sending paused, throttling, network"],
+  ["emailSdkMailer", "validation error, or a 400 or 422 from every adapter tried", "401, 403, 404, 429, 5xx, no status"],
+];
+
+const notThis = [
+  ["templates", "You pass finished html and text."],
+  ["cc, bcc, attachments", "Not in the message type yet. Added in a minor release when a package needs them."],
+  ["queue and retries", "The package that calls send owns those. The mailer says which errors to retry."],
+  ["inbound mail", "That belongs to the package that receives it."],
+];
+---
+
+<Base title="Mailer" description="The email sender BYO packages share. One interface, with adapters for Wraps, your own AWS SES client and email-sdk." current="mailer">
+  <div data-pagefind-body data-pagefind-meta="group:mailer">
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy">
+          <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>mailer</span></nav>
+          <div class="meta-row">
+            <span class="muted">{product.pkg}</span>
+            {product.version ? <span class="badge badge-solid">v{product.version}</span> : <span class="badge badge-dashed">{product.status}</span>}
+            <span class="badge">library · Mailer</span>
+          </div>
+          <h1 class="h1">Mailer</h1>
+          <p class="tagline">One email sender for every BYO package.</p>
+          <p class="lead" style="margin: 0; max-width: 540px">
+            A package takes a Mailer, so you choose how mail goes out and the package never imports a provider SDK. Send through your own AWS SES
+            account with Wraps, through an SES client you already have, or through any provider email-sdk can carry replies through.
+          </p>
+          <InstallTabs pkg={product.pkg} />
+          <div class="btn-row">
+            <a href="/docs/mailer/quickstart" class="btn btn-solid">Read the docs</a>
+            <a href={product.repo} class="btn">GitHub ↗</a>
+            <a href="https://www.npmjs.com/package/@byo-oss/mailer" class="btn">npm ↗</a>
+          </div>
+        </div>
+
+        <div class="hero-art" data-pagefind-ignore>
+          <Frame gaps={[{ side: "top", at: "30%" }, { side: "right", at: "72%" }]} innerStyle="display: flex; flex-direction: column">
+            <div class="pick" role="tablist" aria-label="Adapters">
+              {
+                adapters.map((a, i) => (
+                  <button
+                    type="button"
+                    role="tab"
+                    id={`pick-${a.key}`}
+                    class="pick-item"
+                    aria-selected={i === 0 ? "true" : "false"}
+                    aria-controls={`pick-panel-${a.key}`}
+                    tabindex={i === 0 ? 0 : -1}
+                    data-pick={a.key}
+                  >
+                    <span class="mono pick-name">{a.name}</span>
+                    <span class="mono faint pick-from">{a.from}</span>
+                  </button>
+                ))
+              }
+            </div>
+            {
+              adapters.map((a, i) => (
+                <div id={`pick-panel-${a.key}`} role="tabpanel" aria-labelledby={`pick-${a.key}`} class="pick-panel" hidden={i !== 0}>
+                  <p class="muted pick-note">{a.note}</p>
+                  <CodeBlock code={a.code} title="lib/mailer.ts" />
+                </div>
+              ))
+            }
+            <div class="mono faint pick-foot">same mailer.send() · swap the adapter</div>
+          </Frame>
+          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Pick an adapter: the call your packages make stays the same.</p>
+        </div>
+      </div>
+    </section>
+
+    <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version ?? ""} · all optional`} />
+
+    <section class="section" aria-labelledby="features">
+      <div class="container">
+        <SectionHead index="01" label="what you get" title="An interface, not a provider." id="features" />
+        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+          {
+            features.map((f, i) => (
+              <div class="cell">
+                <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+                <h3 class="h3">{f.title}</h3>
+                <p class="body">{f.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section" aria-labelledby="qs">
+      <div class="container">
+        <SectionHead index="02" label="quickstart" title="Four steps. One file." id="qs">
+          With Wraps, the default. The docs cover <a href="/docs/mailer/ses">your own SES client</a> and <a href="/docs/mailer/email-sdk">email-sdk</a>.
+        </SectionHead>
+        <ol class="qs-list">
+          {
+            steps.map((s, i) => (
+              <li class="qs-step">
+                <div class="qs-text">
+                  <div class="mono faint" style="font-size: 12px">step {String(i + 1).padStart(2, "0")}</div>
+                  <h3 class="mono" style="margin: 10px 0 8px; font-size: 20px">{s.title}</h3>
+                  <p class="body">{s.text}</p>
+                </div>
+                <div class="qs-code">
+                  <CodeBlock code={s.code} lang={s.lang ?? "ts"} title={s.file} />
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <a href="/docs/mailer/quickstart" class="btn" style="margin-top: 32px">Full quickstart in the docs →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="errors">
+      <div class="container split">
+        <div class="split-text">
+          <SectionHead index="03" label="delivery" title="Throw to retry. PermanentMailError to fail." id="errors">
+            Every adapter maps its provider's errors to the same two outcomes, so a package can retry without knowing who sends the mail. Delivery is
+            at-least-once, and the mailer never changes the message it's given.
+          </SectionHead>
+          <ul class="arrow-list" style="margin-top: 24px">
+            <li>isPermanentMailError works across two installed copies</li>
+            <li>replyTo is never copied into headers</li>
+            <li>From, To, Subject, Message-ID, ... in headers fail the send</li>
+          </ul>
+        </div>
+        <div class="split-code">
+          <CodeBlock code={errorCode} title="lib/send.ts" />
+        </div>
+      </div>
+      <div class="container">
+        <div class="table-wrap" style="margin-top: 48px">
+          <table class="mono" style="min-width: 680px">
+            <thead><tr><th scope="col">adapter</th><th scope="col">PermanentMailError</th><th scope="col">retried</th></tr></thead>
+            <tbody>
+              {
+                errors.map(([name, permanent, retried]) => (
+                  <tr>
+                    <td style="color: var(--fg)">{name}</td>
+                    <td>{permanent}</td>
+                    <td>{retried}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+        <a href="/docs/mailer/delivery" class="btn" style="margin-top: 32px">Delivery semantics →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="adapters">
+      <div class="container">
+        <SectionHead index="04" label="email-sdk" title="Any provider that can carry a reply." id="adapters">
+          BYO packages send In-Reply-To and References headers and put a routing token in replyTo. emailSdkMailer accepts only the email-sdk
+          adapters that carry both, and throws when it's created if the client has any other.
+        </SectionHead>
+        <p class="mono body" style="margin: 32px 0 0; max-width: 880px">
+          resend · postmark · sendgrid · cloudflare · unosend · ses · mailgun · mailersend · brevo · sparkpost · jetemail · lettermint · lettr · plunk ·
+          mailtrap · scaleway · smtp · helo
+        </p>
+        <a href="/docs/mailer/email-sdk" class="btn" style="margin-top: 32px">Supported adapters and limits →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="not">
+      <div class="container">
+        <SectionHead index="05" label="what this is not" title="Small on purpose." id="not">
+          When you need more than this, call your provider's SDK directly or write an adapter that passes the contract suite.
+        </SectionHead>
+        <div class="cells" style="margin-top: 48px; --cell-min: 220px">
+          {
+            notThis.map(([label, text]) => (
+              <div class="cell" style="padding: 28px 24px 32px">
+                <div class="cell-index">{label}</div>
+                <p class="body">{text}</p>
+              </div>
+            ))
+          }
+        </div>
+        <a href="/docs/mailer/testing" class="btn" style="margin-top: 32px">Write your own adapter →</a>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Other pages" class="container pager">
+    <a href="/support" class="pager-link"><span class="mono faint">← previous</span><span class="mono">Support</span></a>
+    <a href="/conventions" class="pager-link is-next"><span class="mono faint">next →</span><span class="mono">Conventions</span></a>
+  </nav>
+</Base>
+
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>("[data-pick]")];
+
+  function select(tab: HTMLButtonElement) {
+    for (const t of tabs) {
+      const on = t === tab;
+      t.setAttribute("aria-selected", String(on));
+      t.tabIndex = on ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !on;
+    }
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+</script>
+
+<style>
+  .hero-art {
+    flex: 1 1 440px;
+    min-width: 0;
+  }
+
+  .pick {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    border-bottom: 1px solid var(--line);
+  }
+
+  .pick-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 44px;
+    padding: 12px 16px;
+    background: transparent;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    color: var(--text-2);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .pick-item:hover {
+    background: var(--hover);
+    color: var(--fg);
+  }
+
+  .pick-item[aria-selected="true"] {
+    color: var(--fg);
+    border-bottom-color: var(--fg);
+  }
+
+  .pick-name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .pick-from {
+    font-size: 11px;
+    overflow-wrap: anywhere;
+  }
+
+  .pick-panel {
+    padding: 16px;
+    min-width: 0;
+  }
+
+  .pick-panel[hidden] {
+    display: none;
+  }
+
+  .pick-note {
+    margin: 0 0 12px;
+    font-size: 14px;
+  }
+
+  .pick-foot {
+    margin-top: auto;
+    padding: 12px 16px;
+    font-size: 11px;
+    border-top: 1px solid var(--line);
+  }
+
+  .qs-list {
+    margin: 56px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .qs-step {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 48px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .qs-text {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+
+  .qs-code {
+    flex: 2 1 520px;
+    min-width: 0;
+  }
+
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 56px;
+    align-items: flex-start;
+  }
+
+  .split-text {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+
+  .split-code {
+    flex: 1 1 560px;
+    min-width: 0;
+  }
+</style>

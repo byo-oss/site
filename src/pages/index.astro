@@ -36,6 +36,7 @@ const exitSteps = [
 const preview: Record<string, { rows: [string, string][] }> = {
   notifications: { rows: [["● Payment failed", "2m"], ["○ Invite accepted", "1h"]] },
   support: { rows: [["#1042 Can't reset password", "open"], ["#1041 Invoice question", "solved"]] },
+  mailer: { rows: [["→ alice@example.com", "sent"], ["wraps · ses · email-sdk", "adapter"]] },
 };
 
 const composeCode = `import { betterAuth } from "better-auth";
@@ -190,6 +191,11 @@ export const auth = betterAuth({
               <td class="mono" style="color: var(--fg)">support</td>
               <td>Your support team outgrows a help desk that lives inside the product</td>
               <td class="mono" style="color: var(--fg)">Zendesk · Intercom · Front</td>
+            </tr>
+            <tr>
+              <td class="mono" style="color: var(--fg)">mailer</td>
+              <td>You need templates, attachments, cc or bcc, or batch sending</td>
+              <td class="mono" style="color: var(--fg)">your provider's SDK</td>
             </tr>
           </tbody>
         </table>
