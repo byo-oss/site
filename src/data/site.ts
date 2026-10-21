@@ -124,6 +124,36 @@ const sources: ProductSource[] = [
       },
     ],
   },
+  {
+    slug: "mailer",
+    name: "Mailer",
+    pkg: "@byo-oss/mailer",
+    summary: "The shared email sender for BYO packages, with Wraps, AWS SES and email-sdk adapters.",
+    menuText: "One email-sender interface for BYO packages.",
+    exitTo: [],
+    docsHref: "/docs/mailer/introduction",
+    repo: "https://github.com/byo-oss/mailer",
+    dependencies: [
+      {
+        name: "@wraps.dev/email",
+        requirement: "optional",
+        kind: "peer",
+        text: "wrapsMailer: send through your own AWS SES account.",
+      },
+      {
+        name: "@aws-sdk/client-sesv2",
+        requirement: "optional",
+        kind: "peer",
+        text: "sesMailer: send through an SESv2Client your app already has.",
+      },
+      {
+        name: "@opencoredev/email-sdk",
+        requirement: "optional",
+        kind: "peer",
+        text: "emailSdkMailer: Resend, Postmark, SendGrid, SMTP and more.",
+      },
+    ],
+  },
 ];
 
 export const products: Product[] = await Promise.all(

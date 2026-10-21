@@ -4,7 +4,10 @@ export const docsGroups = ["get started", "guides", "reference", "operations"] a
 export type DocsGroup = (typeof docsGroups)[number];
 
 /** Each product's docs live in its own repo under `docs/`, read from `main` at build. */
-export const docsSources = [{ product: "notifications", repo: "byo-oss/notifications" }] as const;
+export const docsSources = [
+  { product: "notifications", repo: "byo-oss/notifications" },
+  { product: "mailer", repo: "byo-oss/mailer" },
+] as const;
 
 export function docsEditUrl(product: string, slug: string): string | undefined {
   const source = docsSources.find((s) => s.product === product);
