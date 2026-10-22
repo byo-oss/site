@@ -15,11 +15,10 @@ const rules = [
   ["Docs and tests", "8-docs-and-tests", "One README outline, an AGENTS.md for coding agents, tests against a real better-auth instance, strict semver."],
   ["Exit path", "9-exit-path", 'An "Outgrowing this" section, a documented schema, a data export, and uninstall steps.'],
   ["Providers", "10-providers", "Outside services plug in at the edges behind small interfaces. The package's own models stay the store of record."],
-  ["Shared packages", "11-shared-packages", "Sweeps and cleanups declared under a byo key for @byo-oss/core. Email through a Mailer from @byo-oss/mailer."],
+  ["Shared packages", "11-shared-packages", "Sweeps and cleanups declared under a byo key for @byo-oss/core. Email through a Mailer from @byo-oss/mailer. Typed events through onEvent, fired after the write commits."],
 ];
 
 const proposed = [
-  ["P1", "Domain events"],
   ["P2", "Notify through the inbox"],
   ["P3", "@byo-oss/identity"],
   ["P6", "Agent-native operations"],
