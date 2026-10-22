@@ -97,7 +97,7 @@ const sources: ProductSource[] = [
     summary:
       "Tickets, contacts and agent replies inside your app. Contacts are your better-auth users, or an email address for people without an account.",
     menuText: "Tickets, contacts and agent replies inside your app.",
-    exitTo: ["Zendesk", "Intercom", "Front"],
+    exitTo: ["Zendesk", "Plain", "Front"],
     dependencies: [
       {
         name: "better-auth",

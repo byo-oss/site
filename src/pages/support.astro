@@ -181,14 +181,14 @@ const tickets = [
       <div class="container">
         <SectionHead index="03" label="outgrowing this" title="A way out, planned from the start." id="outgrow">
           When your support team outgrows a help desk inside the product, you move to a dedicated tool. Support ships with exportSupportData, a
-          documented schema and a clean uninstall. A field mapping for the most common destination is planned.
+          documented schema, a field mapping to Zendesk's ticket import and a clean uninstall. The README names each tool's import API.
         </SectionHead>
         <div class="exit-grid">
           {
             product.exitTo.map((name) => (
               <div class="exit-card">
                 <span class="mono" style="font-size: 20px">{name}</span>
-                <span class="mono faint" style="font-size: 12px">mapping planned</span>
+                <span class="mono faint" style="font-size: 12px">{name === "Zendesk" ? "field mapping in the README" : "import API in the README"}</span>
               </div>
             ))
           }
