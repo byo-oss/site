@@ -99,7 +99,6 @@ const sources: ProductSource[] = [
     menuText: "Tickets, contacts and agent replies inside your app.",
     exitTo: ["Zendesk", "Plain", "Front"],
     docsHref: "/docs/support/quickstart",
-    docsHref: "/docs/support/quickstart",
     repo: "https://github.com/byo-oss/support",
     dependencies: [
       {
