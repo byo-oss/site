@@ -3,7 +3,7 @@ import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import ReliesOn from "../components/ReliesOn.astro";
 import SectionHead from "../components/SectionHead.astro";
-import { GITHUB_ORG, getProduct } from "../data/site";
+import { getProduct } from "../data/site";
 import Base from "../layouts/Base.astro";
 
 const product = getProduct("support");
@@ -13,7 +13,7 @@ const covers = [
   { title: "Contacts are your users", text: "No separate customer table. People without an account are an email address, linked to their user once they verify it." },
   { title: "Agents by permission", text: "Support exports permission statements for your access-control catalog. Your app decides which roles can reply." },
   { title: "Email in, email out", text: "Customers write in by email and agents reply from your app. Sending goes through a provider adapter, with Wraps as the default." },
-  { title: "Pluggable at the edges", text: "Storage, search and AI sit behind small adapter interfaces. Your tickets always stay in your database." },
+  { title: "Pluggable at the edges", text: "Storage, inbound mail and outbound mail sit behind small adapter interfaces. Your tickets always stay in your database." },
   { title: "Headless first", text: "Hooks own the state and the calls. Components on shadcn variables sit on top, every string overridable." },
 ];
 
@@ -76,7 +76,7 @@ const tickets = [
           </p>
           <InstallTabs pkg={product.pkg} />
           <div class="btn-row">
-            <a href={GITHUB_ORG} class="btn btn-solid">Follow on GitHub ↗</a>
+            <a href="https://github.com/byo-oss/support" class="btn btn-solid">Follow on GitHub ↗</a>
             <a href="#covers" class="btn">What it covers</a>
           </div>
         </div>
@@ -125,7 +125,7 @@ const tickets = [
               </form>
             </div>
           </Frame>
-          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Concept UI. Click a ticket. The final components may differ.</p>
+          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Illustration. Click a ticket to see its thread.</p>
         </div>
       </div>
     </section>
@@ -202,11 +202,11 @@ const tickets = [
           <div class="follow-copy">
             <div class="mono muted" style="font-size: 13px">&gt;_ building in the open</div>
             <h2 id="follow" class="mono follow-title">Shape what comes next.</h2>
-            <p class="lead" style="margin: 0; max-width: 520px">The API is being designed in the open. Tell us how you run support today.</p>
+            <p class="lead" style="margin: 0; max-width: 520px">Issues and pull requests are on GitHub. Tell us how you run support today, and what would make the package fit.</p>
           </div>
           <div class="btn-row">
-            <a href={GITHUB_ORG} class="btn btn-solid">Follow on GitHub ↗</a>
-            <a href="/notifications" class="btn">Use notifications today</a>
+            <a href="https://github.com/byo-oss/support" class="btn btn-solid">Follow on GitHub ↗</a>
+            <a href="/notifications" class="btn">See notifications</a>
           </div>
         </Frame>
       </div>

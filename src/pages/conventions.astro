@@ -5,10 +5,10 @@ import { SPEC_URL } from "../data/site";
 import Base from "../layouts/Base.astro";
 
 const rules = [
-  ["Naming and packaging", "1-naming-and-packaging", "The @byo-oss scope, one package per domain, subpath exports for client, react and providers."],
+  ["Naming and packaging", "1-naming-and-packaging", "The @byo-oss scope, one package per domain, subpath exports for client, react and providers. Tables that depend on options are documented as such."],
   ["Plugin shape", "2-plugin-shape-plugin", "The plugin id doubles as the endpoint prefix. Renamable schema, typed error codes, misconfiguration fails at boot, and queries that hold on every adapter, D1 included."],
   ["Identity", "3-identity", "People are better-auth users, tenants are organizations. No package keeps its own user table."],
-  ["Access and permissions", "4-access-and-permissions", "Every endpoint is server-only, own-rows or permission-gated. Packages check permissions, never role names."],
+  ["Access and permissions", "4-access-and-permissions", "Every endpoint is server-only, own-rows, permission-gated or source-authenticated (a webhook checks the sender, never acts as a user). Packages check permissions, never role names."],
   ["Background work", "5-background-work", "One sweep endpoint per package, called from any scheduler. Leased claims, backoff, at-least-once."],
   ["Data lifecycle", "6-data-lifecycle", "Deleting a user, an organization or a membership removes what the package holds about them, on adapters with or without foreign keys."],
   ["UI", "7-ui-when-theres-a-react-export", "Headless hooks first. Components on shadcn variables, keyboard-ready, every string overridable."],
@@ -80,7 +80,7 @@ export const ac = createAccessControl(statements);`;
           <div class="eyebrow">[00] tiers</div>
           <h2 id="tiers-h" class="conv-h2">Plugin first. App when you must.</h2>
           <p class="body conv-lead">
-            A package is an app only when it needs something a plugin can't give it: its own route tree, inbound webhooks or a separate database.
+            A package is an app only when it needs something a plugin can't give it: its own route tree or a separate database. Inbound webhooks stay plugins.
           </p>
           <div class="cells" style="--cell-min: 260px">
             <div class="cell" style="padding: 28px 24px; gap: 12px">
