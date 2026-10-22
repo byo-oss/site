@@ -254,7 +254,7 @@ const outgrowSteps = [
         <div class="cells" style="margin-top: 56px">
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">identity</div><p class="body">better-auth users and organizations. No separate subscriber table to keep in sync.</p></div>
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">access</div><p class="body">notify is server-only. People list and mark only their own rows.</p></div>
-          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">background work</div><p class="body">One sweep endpoint, processDeliveries, called from any scheduler. At-least-once delivery.</p></div>
+          <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">background work</div><p class="body">One sweep, processDeliveries, called from any scheduler, or sweepAll from @byo-oss/core, which runs each BYO package's sweep. At-least-once delivery.</p></div>
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">other packages</div><p class="body">Proposed: every BYO package notifies through this inbox, so preferences live in one place.</p></div>
         </div>
       </div>

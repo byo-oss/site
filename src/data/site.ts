@@ -55,6 +55,13 @@ const sources: ProductSource[] = [
         text: "Users, sessions and your database adapter. The notification table migrates with it.",
       },
       {
+        name: "@better-auth/core",
+        requirement: "required",
+        kind: "peer",
+        peer: true,
+        text: "The after-commit hooks behind events. Install it at the same version as better-auth.",
+      },
+      {
         name: "organization",
         requirement: "optional",
         kind: "better-auth plugin",
@@ -97,6 +104,13 @@ const sources: ProductSource[] = [
         requirement: "required",
         kind: "peer",
         text: "Contacts, agents and sessions are your better-auth users.",
+      },
+      {
+        name: "@better-auth/core",
+        requirement: "required",
+        kind: "peer",
+        peer: true,
+        text: "The after-commit hooks behind events. Install it at the same version as better-auth.",
       },
       {
         name: "organization",

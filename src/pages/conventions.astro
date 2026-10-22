@@ -12,17 +12,16 @@ const rules = [
   ["Background work", "5-background-work", "One sweep endpoint per package, called from any scheduler. Leased claims, backoff, at-least-once."],
   ["Data lifecycle", "6-data-lifecycle", "Deleting a user, an organization or a membership removes what the package holds about them, on adapters with or without foreign keys."],
   ["UI", "7-ui-when-theres-a-react-export", "Headless hooks first. Components on shadcn variables, keyboard-ready, every string overridable."],
-  ["Docs and tests", "8-docs-and-tests", "One README outline, an AGENTS.md for coding agents, tests against a real better-auth instance."],
+  ["Docs and tests", "8-docs-and-tests", "One README outline, an AGENTS.md for coding agents, tests against a real better-auth instance, strict semver."],
   ["Exit path", "9-exit-path", 'An "Outgrowing this" section, a documented schema, a data export, and uninstall steps.'],
   ["Providers", "10-providers", "Outside services plug in at the edges behind small interfaces. The package's own models stay the store of record."],
+  ["Shared packages", "11-shared-packages", "Sweeps and cleanups declared under a byo key for @byo-oss/core. Email through a Mailer from @byo-oss/mailer."],
 ];
 
 const proposed = [
   ["P1", "Domain events"],
   ["P2", "Notify through the inbox"],
   ["P3", "@byo-oss/identity"],
-  ["P4", "@byo-oss/mailer"],
-  ["P5", "@byo-oss/core"],
   ["P6", "Agent-native operations"],
   ["P7", "Preferences"],
   ["P8", "Bridges for the move out"],
@@ -49,13 +48,13 @@ export const ac = createAccessControl(statements);`;
           <span class="badge badge-dashed">draft v0</span>
           <span class="muted">2026-10-20</span>
           <span class="faint">·</span>
-          <span class="muted">baseline better-auth ^1.6.23</span>
+          <span class="muted">baseline better-auth ^1.7.7</span>
         </div>
         <h1 class="h1">Conventions</h1>
         <p class="tagline" style="max-width: 820px">The rules that let BYO packages work as one system instead of a pile of plugins.</p>
         <p class="lead" style="margin: 0; max-width: 680px">
-          One identity, one permission model, one way to run background work, one UI style. Part 1 is required today, and every rule in it can be met
-          with plain better-auth primitives. Part 2 proposes shared packages that don't exist yet.
+          One identity, one permission model, one way to run background work, one UI style. Part 1 is required today. Its rules need plain better-auth
+          primitives plus two shared packages, @byo-oss/core and @byo-oss/mailer. Part 2 holds proposals that aren't rules yet.
         </p>
         <div class="btn-row">
           <a href={SPEC_URL} class="btn btn-solid">Read SPEC.md ↗</a>
@@ -99,7 +98,7 @@ export const ac = createAccessControl(statements);`;
 
         <section id="part1" aria-labelledby="part1-h">
           <div class="eyebrow">[01] part 1 · required</div>
-          <h2 id="part1-h" class="conv-h2" style="margin-bottom: 32px">Ten rules every package follows.</h2>
+          <h2 id="part1-h" class="conv-h2" style="margin-bottom: 32px">Eleven rules every package follows.</h2>
           <ol class="rules">
             {
               rules.map(([title, anchor, text], i) => (
@@ -126,7 +125,7 @@ export const ac = createAccessControl(statements);`;
           <div class="eyebrow">[03] part 2 · proposed</div>
           <h2 id="part2-h" class="conv-h2">The glue, once two packages need it.</h2>
           <p class="body conv-lead">
-            Shared packages and contracts that don't exist yet. None is built until a second package proves it, and nothing in Part 1 depends on them.
+            Proposals, not rules. Each one stays here until it's promoted, and nothing in Part 1 depends on them.
           </p>
           <div class="proposed">
             {

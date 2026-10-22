@@ -19,7 +19,7 @@ const covers = [
 
 const links = [
   { label: "agent + requester alerts", target: "notifications", state: "shipped", solid: true },
-  { label: "outbound replies", target: "shared mailer", state: "proposed", solid: false },
+  { label: "outbound replies", target: "shared mailer", state: "shipped", solid: true },
   { label: "ticket events", target: "activity · webhooks", state: "proposed", solid: false },
   { label: "users · orgs · permissions", target: "better-auth", state: "your app", solid: true },
 ];
@@ -58,7 +58,7 @@ const tickets = [
 ];
 ---
 
-<Base title="Support" description="A help desk that lives inside your better-auth app. Tickets, contacts and agent replies in your own database. In development." current="support">
+<Base title="Support" description="A help desk that lives inside your better-auth app. Tickets, contacts and agent replies in your own database." current="support">
   <div data-pagefind-body data-pagefind-meta="group:support">
     <section class="section hero">
       <div class="container">
@@ -66,7 +66,7 @@ const tickets = [
           <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>support</span></nav>
           <div class="meta-row">
             <span class="muted">{product.pkg}</span>
-            <span class="badge badge-dashed">in development</span>
+            <span class="badge badge-solid">v{product.version}</span>
           </div>
           <h1 class="h1">Support</h1>
           <p class="tagline">A help desk that lives inside your app.</p>
@@ -74,7 +74,7 @@ const tickets = [
             Tickets, contacts and agent replies in your own database. Contacts are your better-auth users, or an email address for people who don't have
             an account yet. Agents are whoever your permissions say they are.
           </p>
-          <InstallTabs pkg={product.pkg} pending />
+          <InstallTabs pkg={product.pkg} />
           <div class="btn-row">
             <a href={GITHUB_ORG} class="btn btn-solid">Follow on GitHub ↗</a>
             <a href="#covers" class="btn">What it covers</a>
@@ -130,7 +130,7 @@ const tickets = [
       </div>
     </section>
 
-    <ReliesOn product={product} note="planned · may change before 0.1" />
+    <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version}`} />
 
     <section id="covers" class="section" aria-labelledby="covers-h">
       <div class="container">
@@ -180,15 +180,15 @@ const tickets = [
     <section class="section" aria-labelledby="outgrow">
       <div class="container">
         <SectionHead index="03" label="outgrowing this" title="A way out, planned from the start." id="outgrow">
-          When your support team outgrows a help desk inside the product, you move to a dedicated tool. Support ships with a data export in a
-          documented schema, a field mapping for the most common destination, and migration steps.
+          When your support team outgrows a help desk inside the product, you move to a dedicated tool. Support ships with exportSupportData, a
+          documented schema and a clean uninstall. A field mapping for the most common destination is planned.
         </SectionHead>
         <div class="exit-grid">
           {
             product.exitTo.map((name) => (
               <div class="exit-card">
                 <span class="mono" style="font-size: 20px">{name}</span>
-                <span class="mono faint" style="font-size: 12px">mapping ships with 0.1</span>
+                <span class="mono faint" style="font-size: 12px">mapping planned</span>
               </div>
             ))
           }
@@ -201,7 +201,7 @@ const tickets = [
         <Frame gaps={[{ side: "top", at: "22%" }, { side: "bottom", at: "70%" }]} innerClass="follow">
           <div class="follow-copy">
             <div class="mono muted" style="font-size: 13px">&gt;_ building in the open</div>
-            <h2 id="follow" class="mono follow-title">Want it sooner? Shape it.</h2>
+            <h2 id="follow" class="mono follow-title">Shape what comes next.</h2>
             <p class="lead" style="margin: 0; max-width: 520px">The API is being designed in the open. Tell us how you run support today.</p>
           </div>
           <div class="btn-row">
