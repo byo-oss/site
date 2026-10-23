@@ -42,11 +42,11 @@ const productCurrent = products.some((p) => p.slug === current);
           aria-controls="products-menu"
           data-popover
         >
-          products
+          packages
           <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4"></path></svg>
         </button>
         <div id="products-menu" class="popover" hidden>
-          <div class="popover-label">products</div>
+          <div class="popover-label">packages</div>
           {
             products.map((p) => (
               <a href={`/${p.slug}`} class="menu-item" aria-current={current === p.slug ? "page" : undefined}>
@@ -59,7 +59,7 @@ const productCurrent = products.some((p) => p.slug === current);
             ))
           }
           <div class="popover-foot">
-            <a href="/#products">all products →</a>
+            <a href="/#products">all packages →</a>
             <a href="/docs/notifications/quickstart">docs →</a>
           </div>
         </div>

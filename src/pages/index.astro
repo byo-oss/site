@@ -4,7 +4,7 @@ import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import SectionHead from "../components/SectionHead.astro";
 import Wordmark from "../components/Wordmark.astro";
-import { GITHUB_ORG, products, reliesOnLine } from "../data/site";
+import { GITHUB_ORG, NPM_ORG, products, reliesOnLine } from "../data/site";
 import Base from "../layouts/Base.astro";
 
 const principles = [
@@ -34,10 +34,10 @@ const exitSteps = [
 ];
 
 const preview: Record<string, { rows: [string, string][] }> = {
-  notifications: { rows: [["● Payment failed", "2m"], ["○ Invite accepted", "1h"]] },
-  support: { rows: [["#1042 Can't reset password", "open"], ["#1041 Invoice question", "solved"]] },
-  entitlements: { rows: [["requests · 940 / 1,000", "pro"], ["sso · upgrade to Team", "refused"]] },
-  mailer: { rows: [["→ alice@example.com", "sent"], ["wraps · ses · email-sdk", "adapter"]] },
+  notifications: { rows: [["plugins: [inbox()]", ""], ["// auth.api.notify(…)", ""]] },
+  support: { rows: [["plugins: [support()]", ""], ["// ./react: SupportInbox", ""]] },
+  entitlements: { rows: [["entitlements({ catalog })", ""], ["// defineEntitlements(…)", ""]] },
+  mailer: { rows: [["wrapsMailer({ … })", ""], ["// or ./ses, ./email-sdk", ""]] },
 };
 
 const composeCode = `import { betterAuth } from "better-auth";
@@ -54,19 +54,19 @@ export const auth = betterAuth({
 });`;
 ---
 
-<Base title="BYO" description="Open-source notifications, support and more for better-auth apps. Libraries, not services: your app, your database, your users.">
+<Base title="BYO" description="Open-source, MIT-licensed packages for better-auth apps: notifications, support and more. Libraries, not services: your app, your database, your users.">
   <section class="section">
     <div class="container home-hero">
       <div class="hero-copy">
         <div class="mono muted" style="font-size: 13px">&gt;_ bring your own</div>
-        <h1 class="home-title">The SaaS you'd rent, as plugins you own.</h1>
+        <h1 class="home-title">Open-source packages for better-auth apps.</h1>
         <p class="lead" style="margin: 0; font-size: 18px; max-width: 540px">
-          Open-source notifications, support and more for better-auth apps. Each package is a library, not a service: it runs in your app, keeps
-          its data in your database, and knows your users and organizations.
+          Notifications, support and more, MIT licensed. Each package is a library, not a service: it runs in your app, keeps its data in your
+          database, and knows your users and organizations.
         </p>
         <InstallTabs pkg="@byo-oss/notifications" />
         <div class="btn-row">
-          <a href="#products" class="btn btn-solid">Browse products</a>
+          <a href={GITHUB_ORG} class="btn btn-solid">Source on GitHub ↗</a>
           <a href="/conventions" class="btn">Read the conventions</a>
         </div>
       </div>
@@ -105,7 +105,7 @@ export const auth = betterAuth({
 
   <section id="products" class="section" aria-labelledby="products-h">
     <div class="container">
-      <SectionHead index="02" label="products" title="One package per domain." id="products-h">
+      <SectionHead index="02" label="packages" title="One package per domain." id="products-h">
         Each package covers its whole domain at the depth a young product needs, and is named for what it covers.
       </SectionHead>
       <div class="product-grid">
@@ -133,6 +133,7 @@ export const auth = betterAuth({
                   <span class="faint">relies on</span> {reliesOnLine(p)}
                 </span>
                 <span>exit → {p.exitTo.join(" · ")}</span>
+                <span>MIT · {p.repo?.replace("https://github.com/", "")}</span>
               </div>
             </a>
           ))
@@ -225,11 +226,12 @@ export const auth = betterAuth({
     <div class="container" style="padding-block: 96px">
       <Frame gaps={[{ side: "top", at: "78%" }, { side: "right", at: "58%" }]} innerClass="cta-inner">
         <div class="mono muted" style="font-size: 13px">&gt;_</div>
-        <h2 id="cta" class="cta-title">Own the boring parts.</h2>
-        <p class="lead" style="margin: 0; max-width: 520px">Ship the inbox your users expect this afternoon, in the database you already back up.</p>
+        <h2 id="cta" class="cta-title">Read the source.</h2>
+        <p class="lead" style="margin: 0; max-width: 520px">Every package is MIT licensed. Read the code, install from npm, or start with the conventions they all follow.</p>
         <div class="btn-row">
-          <a href="/notifications" class="btn btn-solid">Start with notifications</a>
-          <a href={GITHUB_ORG} class="btn">GitHub ↗</a>
+          <a href={GITHUB_ORG} class="btn btn-solid">GitHub ↗</a>
+          <a href={NPM_ORG} class="btn">npm ↗</a>
+          <a href="/conventions" class="btn">Conventions</a>
         </div>
       </Frame>
     </div>
