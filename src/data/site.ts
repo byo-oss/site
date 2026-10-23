@@ -75,11 +75,17 @@ const sources: ProductSource[] = [
         text: "The ./react hooks and <InboxButton />. Skip it for server-only use.",
       },
       {
+        name: "@byo-oss/mailer",
+        requirement: "optional",
+        kind: "BYO package",
+        text: "The email channel sends through any Mailer: your own SES, Resend, Postmark and more. Install it in your app to use email.",
+      },
+      {
         name: "@wraps.dev/email",
         requirement: "optional",
         kind: "peer",
         peer: true,
-        text: "The email channel, sent through your own AWS SES account.",
+        text: "Only for wrapsMailer, which sends through your own AWS SES account.",
       },
       {
         name: "vitest",

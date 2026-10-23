@@ -84,12 +84,13 @@ export function Navbar() {
 ];
 
 const emailCode = `import { inbox } from "@byo-oss/notifications";
-import { wrapsEmail } from "@byo-oss/notifications/wraps";
+import { mailerChannel } from "@byo-oss/notifications/mailer";
+import { wrapsMailer } from "@byo-oss/mailer/wraps";
 
 inbox({
   appUrl: "https://app.acme.com",
   channels: {
-    email: wrapsEmail({ from: "Acme <notify@acme.com>" }),
+    email: mailerChannel({ mailer: wrapsMailer({ from: "Acme <notify@acme.com>" }) }),
   },
   routes: {
     // email after 15 minutes if still unread
@@ -233,8 +234,8 @@ const outgrowSteps = [
       <div class="container split">
         <div class="split-text">
           <SectionHead index="03" label="email" title="Email is the follow-up, not the default." id="email">
-            The in-app row is always written. Route a type to email and it's sent only if nobody read or saw it first, through your own AWS SES
-            account with the Wraps adapter.
+            The in-app row is always written. Route a type to email and it's sent only if nobody read or saw it first, through any
+            mailer: your own AWS SES account, Resend, Postmark and more.
           </SectionHead>
           <ul class="arrow-list" style="margin-top: 24px">
             <li>ifUnreadAfter: wait, then send if still unread</li>
