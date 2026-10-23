@@ -1,4 +1,5 @@
 ---
+import { cellsFor } from "../lib/cells";
 import CodeBlock from "../components/CodeBlock.astro";
 import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
@@ -325,7 +326,7 @@ const notThis = [
     <section class="section" aria-labelledby="features">
       <div class="container">
         <SectionHead index="02" label="what you get" title="An interface, not a provider." id="features" />
-        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+        <div class:list={["cells", cellsFor(features.length), "cells-lg"]} style="margin-top: 56px">
           {
             features.map((f, i) => (
               <div class="cell">
@@ -416,7 +417,7 @@ const notThis = [
         <SectionHead index="06" label="what this is not" title="Small on purpose." id="not">
           Changing providers means passing a different adapter: the packages that take a Mailer don't change. When you need more than this interface carries, call your provider's SDK directly or write an adapter that passes the contract suite.
         </SectionHead>
-        <div class="cells" style="margin-top: 48px; --cell-min: 220px">
+        <div class:list={["cells", cellsFor(notThis.length)]} style="margin-top: 48px">
           {
             notThis.map(([label, text]) => (
               <div class="cell" style="padding: 28px 24px 32px">

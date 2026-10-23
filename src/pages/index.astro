@@ -1,4 +1,5 @@
 ---
+import { cellsFor } from "../lib/cells";
 import CodeBlock from "../components/CodeBlock.astro";
 import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
@@ -89,7 +90,7 @@ export const auth = betterAuth({
       <SectionHead index="01" label="principles" title="Libraries, not services." id="principles">
         No dashboards to sign up for, no services to deploy. You install a package the same way you installed better-auth.
       </SectionHead>
-      <div class="cells" style="margin-top: 56px">
+      <div class:list={["cells", cellsFor(principles.length)]} style="margin-top: 56px">
         {
           principles.map((p, i) => (
             <div class="cell">
@@ -207,7 +208,7 @@ export const auth = betterAuth({
           </tbody>
         </table>
       </div>
-      <div class="cells" style="margin-top: 48px; --cell-min: 220px">
+      <div class:list={["cells", cellsFor(exitSteps.length)]} style="margin-top: 48px">
         {
           exitSteps.map((s, i) => (
             <div class="cell" style="padding: 28px 24px">
@@ -308,8 +309,23 @@ export const auth = betterAuth({
   .product-grid {
     margin-top: 56px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
+  }
+
+  /* an odd last product fills its row, and "More domains" is always a full row of its own */
+  .product-card:nth-last-child(2):nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .product-card.is-next {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 719.98px) {
+    .product-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .product-card {

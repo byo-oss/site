@@ -1,4 +1,5 @@
 ---
+import { cellsFor } from "../lib/cells";
 import CodeBlock from "../components/CodeBlock.astro";
 import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
@@ -191,7 +192,7 @@ const outgrowSteps = [
     <section class="section" aria-labelledby="features">
       <div class="container">
         <SectionHead index="01" label="what you get" title="A plugin, not a platform." id="features" />
-        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+        <div class:list={["cells", cellsFor(features.length), "cells-lg"]} style="margin-top: 56px">
           {
             features.map((f, i) => (
               <div class="cell">
@@ -253,7 +254,7 @@ const outgrowSteps = [
     <section class="section" aria-labelledby="system">
       <div class="container">
         <SectionHead index="04" label="part of byo" title="Built to the conventions." id="system" />
-        <div class="cells" style="margin-top: 56px">
+        <div class="cells cells-c4" style="margin-top: 56px">
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">identity</div><p class="body">better-auth users and organizations. No separate subscriber table to keep in sync.</p></div>
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">access</div><p class="body">notify is server-only. People list and mark only their own rows.</p></div>
           <div class="cell" style="padding: 28px 24px 32px"><div class="cell-index">background work</div><p class="body">One sweep, processDeliveries, called from any scheduler, or sweepAll from @byo-oss/core, which runs each BYO package's sweep. At-least-once delivery.</p></div>
@@ -285,7 +286,7 @@ const outgrowSteps = [
             </tbody>
           </table>
         </div>
-        <ol class="cells" style="margin: 48px 0 0; padding: 0; list-style: none; --cell-min: 200px">
+        <ol class:list={["cells", cellsFor(outgrowSteps.length)]} style="margin: 48px 0 0; padding: 0; list-style: none">
           {
             outgrowSteps.map(([label, text], i) => (
               <li class="cell" style="padding: 24px 22px">

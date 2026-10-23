@@ -440,6 +440,89 @@ h3 {
   color: var(--faint);
 }
 
+/* Fixed columns by item count (see src/lib/cells.ts), so a grid never ends in a lone cell.
+   The trailing cell stretches across the rest of its row, which also leaves no gap.
+   Wide: cN columns. Medium: c5 drops to 3, c4 and c3 to 2. Phones: one column. */
+.cells[class*="cells-c"] {
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
+}
+
+.cells-c2 { --cols: 2; }
+.cells-c3 { --cols: 3; }
+.cells-c4 { --cols: 4; }
+.cells-c5 { --cols: 5; }
+
+@media (min-width: 620px) {
+  .cells-c2 > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+@media (min-width: 900px) {
+  .cells-c3 > :last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+  .cells-c3 > :last-child:nth-child(3n + 2) { grid-column: span 2; }
+  .cells-c4 > :last-child:nth-child(4n + 1) { grid-column: 1 / -1; }
+  .cells-c4 > :last-child:nth-child(4n + 2) { grid-column: span 3; }
+  .cells-c4 > :last-child:nth-child(4n + 3) { grid-column: span 2; }
+}
+
+@media (min-width: 1200px) {
+  .cells-c5 > :last-child:nth-child(5n + 1) { grid-column: 1 / -1; }
+  .cells-c5 > :last-child:nth-child(5n + 2) { grid-column: span 4; }
+  .cells-c5 > :last-child:nth-child(5n + 3) { grid-column: span 3; }
+  .cells-c5 > :last-child:nth-child(5n + 4) { grid-column: span 2; }
+}
+
+/* medium: 620px up to the wide breakpoint of each class */
+@media (min-width: 620px) and (max-width: 1199.98px) {
+  .cells-c5 { --cols: 3; }
+}
+
+@media (min-width: 900px) and (max-width: 1199.98px) {
+  .cells-c5 > :last-child:nth-child(3n + 1) { grid-column: 1 / -1; }
+  .cells-c5 > :last-child:nth-child(3n + 2) { grid-column: span 2; }
+}
+
+@media (min-width: 620px) and (max-width: 899.98px) {
+  .cells-c3,
+  .cells-c4 { --cols: 2; }
+  .cells-c3 > :last-child:nth-child(odd),
+  .cells-c4 > :last-child:nth-child(odd),
+  .cells-c5 > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+@media (min-width: 620px) and (max-width: 899.98px) {
+  .cells-c5 { --cols: 2; }
+}
+
+@media (max-width: 619.98px) {
+  .cells[class*="cells-c"] { --cols: 1; }
+}
+
+/* larger cells, for the six-item "what you get" blocks (three columns by two rows) */
+.cells-lg .cell {
+  padding: 44px 36px 52px;
+  gap: 18px;
+}
+
+.cells-lg .cell-index {
+  font-size: 13px;
+}
+
+.cells-lg .h3 {
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.cells-lg .body {
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+@media (max-width: 619.98px) {
+  .cells-lg .cell {
+    padding: 32px 28px 40px;
+  }
+}
+
 /* ---------- code ---------- */
 
 code {

@@ -1,4 +1,5 @@
 ---
+import { cellsFor } from "../lib/cells";
 import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import ReliesOn from "../components/ReliesOn.astro";
@@ -168,7 +169,7 @@ const fmt = (n: number) => n.toLocaleString("en-US");
         <SectionHead index="01" label="what it covers" title="The whole domain, at a young product's depth." id="covers-h">
           Built to the BYO conventions from day one: your identity, your permissions, your database.
         </SectionHead>
-        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+        <div class:list={["cells", cellsFor(covers.length), "cells-lg"]} style="margin-top: 56px">
           {
             covers.map((c, i) => (
               <div class="cell">

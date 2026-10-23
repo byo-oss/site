@@ -1,5 +1,6 @@
 ---
 import type { Product } from "../data/site";
+import { cellsFor } from "../lib/cells";
 
 interface Props {
   product: Product;
@@ -16,7 +17,7 @@ const badgeClass = { required: "badge badge-solid", recommended: "badge badge-st
       <h2 id="relies-on">Relies on</h2>
       <span class="mono faint" style="font-size: 12px">{note}</span>
     </div>
-    <div class="cells" style="--cell-min: 220px">
+    <div class:list={["cells", cellsFor(product.dependencies.length)]}>
       {
         product.dependencies.map((d) => (
           <div class="cell">
