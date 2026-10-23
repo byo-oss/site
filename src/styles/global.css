@@ -32,17 +32,6 @@
   --lines: rgba(17, 17, 17, 0.7);
   --scrim: rgba(0, 0, 0, 0.62);
   --shadow: rgba(0, 0, 0, 0.4);
-  --code-foreground: #e6e6e6;
-  --code-background: transparent;
-  --code-token-keyword: #ffffff;
-  --code-token-constant: #ffffff;
-  --code-token-function: #ffffff;
-  --code-token-parameter: #d4d4d4;
-  --code-token-string: #bdbdbd;
-  --code-token-string-expression: #bdbdbd;
-  --code-token-comment: #8f8f8f;
-  --code-token-punctuation: #a3a3a3;
-  --code-token-link: #ffffff;
   color-scheme: dark;
 }
 
@@ -67,16 +56,6 @@
     --lines: rgba(255, 255, 255, 0.72);
     --scrim: rgba(17, 17, 17, 0.38);
     --shadow: rgba(0, 0, 0, 0.12);
-    --code-foreground: #262626;
-    --code-token-keyword: #111111;
-    --code-token-constant: #111111;
-    --code-token-function: #111111;
-    --code-token-parameter: #262626;
-    --code-token-string: #404040;
-    --code-token-string-expression: #404040;
-    --code-token-comment: #6b6b6b;
-    --code-token-punctuation: #525252;
-    --code-token-link: #111111;
     color-scheme: light;
   }
 }
@@ -101,16 +80,6 @@
   --lines: rgba(255, 255, 255, 0.72);
   --scrim: rgba(17, 17, 17, 0.38);
   --shadow: rgba(0, 0, 0, 0.12);
-  --code-foreground: #262626;
-  --code-token-keyword: #111111;
-  --code-token-constant: #111111;
-  --code-token-function: #111111;
-  --code-token-parameter: #262626;
-  --code-token-string: #404040;
-  --code-token-string-expression: #404040;
-  --code-token-comment: #6b6b6b;
-  --code-token-punctuation: #525252;
-  --code-token-link: #111111;
   color-scheme: light;
 }
 
@@ -576,15 +545,15 @@ code {
   color: var(--fg);
 }
 
-.code-frame pre {
+.code-frame pre.th-code {
   margin: 0;
   padding: 18px 20px 22px;
   overflow-x: auto;
   font-family: var(--font-mono);
   font-size: 13.5px;
   line-height: 1.75;
-  background: transparent !important;
-  color: var(--code-foreground);
+  background: transparent;
+  color: var(--th-token);
 }
 
 .code-frame.is-shell {
@@ -596,7 +565,7 @@ code {
   color: var(--faint);
 }
 
-.code-frame.is-shell .line::before {
+.code-frame.is-shell .th-line::before {
   content: "$ ";
   color: var(--faint);
 }

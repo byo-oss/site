@@ -1,6 +1,5 @@
 ---
-import { Code } from "astro:components";
-import { byoTheme, codeFrame } from "../lib/shiki.mjs";
+import { codeFrameHtml } from "../lib/highlight.mjs";
 
 interface Props {
   code: string;
@@ -11,4 +10,4 @@ interface Props {
 const { code, lang = "ts", title } = Astro.props;
 ---
 
-<Code code={code.trim()} lang={lang as never} meta={title ? `title="${title}"` : ""} theme={byoTheme} transformers={[codeFrame()]} />
+<Fragment set:html={codeFrameHtml({ code, lang, title })} />

@@ -1,0 +1,17 @@
+---
+import { createThemeBaseCss, createThemeRule } from "@tanstack/highlight/theme";
+import { githubDarkTheme } from "@tanstack/highlight/themes/github-dark";
+import { githubLightTheme } from "@tanstack/highlight/themes/github-light";
+
+// GitHub dark and light, as TanStack Highlight CSS variables (--th-*), under the site's own switch:
+// dark by default, light when the system asks for it, and either one when the theme toggle sets data-theme.
+const css = [
+  createThemeRule(":root", githubDarkTheme),
+  `@media (prefers-color-scheme: light) {\n${createThemeRule(':root:not([data-theme="dark"])', githubLightTheme)}\n}`,
+  createThemeRule(':root[data-theme="light"]', githubLightTheme),
+  createThemeRule(':root[data-theme="dark"]', githubDarkTheme),
+  createThemeBaseCss(),
+].join("\n");
+---
+
+<style is:global set:html={css}></style>

@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import HighlightStyles from "../components/HighlightStyles.astro";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Search from "../components/Search.astro";
@@ -46,6 +47,7 @@ const fullTitle = title === "BYO" ? "BYO: open-source packages for better-auth a
         document.documentElement.dataset.version = "latest";
       }
     </script>
+    <HighlightStyles />
   </head>
   <body>
     <a href="#main" class="skip-link">Skip to content</a>

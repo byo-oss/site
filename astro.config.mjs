@@ -1,7 +1,8 @@
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
-import { byoTheme, codeFrame } from "./src/lib/shiki.mjs";
+import { satteri } from "@astrojs/markdown-satteri";
+import { byoCodePlugin } from "./src/lib/highlight.mjs";
 
 export default defineConfig({
   site: "https://byo.dev",
@@ -10,9 +11,8 @@ export default defineConfig({
   trailingSlash: "never",
   integrations: [mdx(), sitemap()],
   markdown: {
-    shikiConfig: {
-      theme: byoTheme,
-      transformers: [codeFrame()],
-    },
+    // code fences are highlighted by TanStack Highlight (byoCodePlugin), not Shiki. .mdx inherits the processor.
+    syntaxHighlight: false,
+    processor: satteri({ hastPlugins: [byoCodePlugin] }),
   },
 });
