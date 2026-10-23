@@ -292,10 +292,19 @@ const notThis = [
       </div>
     </section>
 
+    <section class="section" aria-labelledby="switch">
+      <div class="container">
+        <SectionHead index="05" label="switching" title="Switching providers is one file." id="switch">
+          A package takes a Mailer and never imports a provider SDK, so changing providers means changing the file that builds it. Nothing that
+          takes the mailer changes. The sender address, or its domain, has to be verified with the new provider before you cut over.
+        </SectionHead>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="not">
       <div class="container">
-        <SectionHead index="05" label="what this is not" title="Small on purpose." id="not">
-          When you need more than this, call your provider's SDK directly or write an adapter that passes the contract suite.
+        <SectionHead index="06" label="what this is not" title="Small on purpose." id="not">
+          Changing providers means passing a different adapter: the packages that take a Mailer don't change. When you need more than this interface carries, call your provider's SDK directly or write an adapter that passes the contract suite.
         </SectionHead>
         <div class="cells" style="margin-top: 48px; --cell-min: 220px">
           {

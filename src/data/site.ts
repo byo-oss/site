@@ -244,7 +244,7 @@ const sources: ProductSource[] = [
     pkg: "@byo-oss/mailer",
     summary: "One email-sender interface for BYO packages. Send through Wraps, your own SES client, or any provider email-sdk can carry replies through.",
     menuText: "The email sender BYO packages share: Wraps, SES or email-sdk.",
-    exitTo: ["your provider's SDK"],
+    exitTo: ["another provider's adapter", "your provider's SDK"],
     docsHref: "/docs/mailer/introduction",
     repo: "https://github.com/byo-oss/mailer",
     dependencies: [
