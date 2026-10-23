@@ -73,6 +73,44 @@ expect(mailer.sent[0]?.to).toBe("alice@example.com");`,
   },
 ];
 
+// Source of truth: SUPPORTED_ADAPTERS in @byo-oss/mailer src/email-sdk.ts and docs/email-sdk.mdx, at v0.1.1.
+// `limit` is a send the adapter still rejects (a PermanentMailError). Update with the mailer, not from memory.
+const emailSdkAdapters: { id: string; limit?: string }[] = [
+  { id: "resend" },
+  { id: "postmark" },
+  { id: "sendgrid" },
+  { id: "cloudflare", limit: "rejects display-name recipients (\"Alice <alice@example.com>\")" },
+  { id: "unosend" },
+  { id: "ses", limit: "reports no Message-ID, so use wrapsMailer or sesMailer when you need to thread" },
+  { id: "mailgun" },
+  { id: "mailersend" },
+  { id: "brevo" },
+  { id: "sparkpost" },
+  { id: "jetemail", limit: "needs a display name in from" },
+  { id: "lettermint" },
+  { id: "lettr", limit: "rejects List-Unsubscribe, display-name recipients and more than 10 headers" },
+  { id: "plunk" },
+  { id: "mailtrap" },
+  { id: "scaleway" },
+  { id: "smtp", limit: "keep the default adapter name: a renamed smtp({ name }) is rejected" },
+  { id: "helo" },
+];
+const withLimits = emailSdkAdapters.filter((a) => a.limit);
+
+const matrix = [
+  { name: "wrapsMailer", from: "@byo-oss/mailer/wraps", via: "AWS SES, through @wraps.dev/email", messageId: "yes, in us-east-1", note: "The default." },
+  { name: "sesMailer", from: "@byo-oss/mailer/ses", via: "An SESv2Client your app already has, through @aws-sdk/client-sesv2", messageId: "yes, in us-east-1", note: "" },
+  { name: "emailSdkMailer", from: "@byo-oss/mailer/email-sdk", via: `${emailSdkAdapters.length} providers, through @opencoredev/email-sdk`, messageId: "no, an id only", note: "Listed below." },
+  { name: "memoryMailer", from: "@byo-oss/mailer", via: "Nothing: it records messages", messageId: "optional", note: "For your tests." },
+];
+
+// can't carry both a reply-to address and In-Reply-To / References headers, or can't take several recipients
+const notSupported = [
+  { ids: ["mailchimp", "iterable", "loops", "sequenzy", "primitive", "zeptomail", "mailpace"], why: "can't carry both a reply-to address and reply headers" },
+  { ids: ["graph"], why: "Microsoft Graph only accepts x- headers" },
+  { ids: ["sendheron"], why: "takes one recipient" },
+];
+
 const steps = [
   {
     title: "Install",
@@ -150,7 +188,8 @@ const notThis = [
           <p class="tagline">One email sender for every BYO package.</p>
           <p class="lead" style="margin: 0; max-width: 540px">
             A package takes a Mailer, so you choose how mail goes out and the package never imports a provider SDK. Send through your own AWS SES
-            account with Wraps, through an SES client you already have, or through any provider email-sdk can carry replies through.
+            account with Wraps, through an SES client you already have, or through any of {emailSdkAdapters.length} providers email-sdk can carry replies through.{" "}
+            <a href="#providers">See every supported provider.</a>
           </p>
           <InstallTabs pkg={product.pkg} />
           <div class="btn-row">
@@ -198,9 +237,94 @@ const notThis = [
 
     <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version ?? ""} · all optional`} />
 
+    <section id="providers" class="section" aria-labelledby="providers-title">
+      <div class="container">
+        <SectionHead index="01" label="supported" title={`Wraps, SES and ${emailSdkAdapters.length} more providers.`} id="providers-title">
+          Four adapters. Two send through AWS SES directly. emailSdkMailer carries {emailSdkAdapters.length} providers through email-sdk, the ones that can carry a reply. Swap one
+          for another and nothing that takes the mailer changes.
+        </SectionHead>
+
+        <div class="table-wrap" style="margin-top: 48px">
+          <table class="mono" style="min-width: 760px">
+            <thead>
+              <tr><th scope="col">adapter</th><th scope="col">sends through</th><th scope="col">reports the Message-ID</th></tr>
+            </thead>
+            <tbody>
+              {
+                matrix.map((m) => (
+                  <tr>
+                    <td style="color: var(--fg)">{m.name}<div class="faint" style="font-size: 12px">{m.from}</div></td>
+                    <td>{m.via}{m.note ? <span class="faint"> · {m.note}</span> : null}</td>
+                    <td>{m.messageId}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="mono" style="margin: 56px 0 8px; font-size: 20px">Through email-sdk: {emailSdkAdapters.length} providers</h3>
+        <p class="body" style="max-width: 720px">
+          BYO packages send In-Reply-To and References headers and put a routing token in replyTo, so emailSdkMailer accepts only the email-sdk adapters that carry both.
+          These are the adapter names you pass to <span class="mono">createEmailClient</span>. A <span class="mono">*</span> marks a limit, listed below.
+        </p>
+        <ul class="mono" style="list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px" aria-label="Supported email-sdk adapters">
+          {
+            emailSdkAdapters.map((a) => (
+              <li class="badge" title={a.limit} style="font-size: 13px; padding: 4px 10px">
+                {a.id}
+                {a.limit ? "*" : ""}
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">
+          Also accepted: memory, email-sdk's test adapter. emailSdkMailer throws a TypeError when it is created if the client holds any adapter not on this list.
+        </p>
+
+        <h3 class="mono" style="margin: 48px 0 8px; font-size: 20px">Limits</h3>
+        <div class="table-wrap">
+          <table class="mono" style="min-width: 680px">
+            <thead><tr><th scope="col">adapter</th><th scope="col">what it still rejects or can't do</th></tr></thead>
+            <tbody>
+              {
+                withLimits.map((a) => (
+                  <tr>
+                    <td style="color: var(--fg)">{a.id}</td>
+                    <td>{a.limit}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="mono" style="margin: 48px 0 8px; font-size: 20px">Not supported</h3>
+        <p class="body" style="max-width: 720px">
+          These email-sdk adapters are rejected, so a client that holds one fails when the mailer is created, not on a send. For these, call the provider's SDK directly or write your own adapter.
+        </p>
+        <ul class="mono" style="list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 12px" aria-label="Unsupported email-sdk adapters">
+          {
+            notSupported.map((n) => (
+              <li>
+                {n.ids.map((id) => (
+                  <span class="badge badge-dashed" style="margin-right: 6px; font-size: 13px; padding: 4px 10px">{id}</span>
+                ))}
+                <span class="faint"> {n.why}</span>
+              </li>
+            ))
+          }
+        </ul>
+        <div class="btn-row" style="margin-top: 32px">
+          <a href="/docs/mailer/email-sdk" class="btn">email-sdk adapters in the docs →</a>
+          <a href="/docs/mailer/testing" class="btn">Write your own adapter →</a>
+        </div>
+      </div>
+    </section>
+
     <section class="section" aria-labelledby="features">
       <div class="container">
-        <SectionHead index="01" label="what you get" title="An interface, not a provider." id="features" />
+        <SectionHead index="02" label="what you get" title="An interface, not a provider." id="features" />
         <div class="cells" style="margin-top: 56px; --cell-min: 260px">
           {
             features.map((f, i) => (
@@ -217,7 +341,7 @@ const notThis = [
 
     <section id="quickstart" class="section" aria-labelledby="qs">
       <div class="container">
-        <SectionHead index="02" label="quickstart" title="Four steps. One file." id="qs">
+        <SectionHead index="03" label="quickstart" title="Four steps. One file." id="qs">
           With Wraps, the default. The docs cover <a href="/docs/mailer/ses">your own SES client</a> and <a href="/docs/mailer/email-sdk">email-sdk</a>.
         </SectionHead>
         <ol class="qs-list">
@@ -243,7 +367,7 @@ const notThis = [
     <section class="section" aria-labelledby="errors">
       <div class="container split">
         <div class="split-text">
-          <SectionHead index="03" label="delivery" title="Throw to retry. PermanentMailError to fail." id="errors">
+          <SectionHead index="04" label="delivery" title="Throw to retry. PermanentMailError to fail." id="errors">
             Every adapter maps its provider's errors to the same two outcomes, so a package can retry without knowing who sends the mail. Delivery is
             at-least-once, and the mailer never changes the message it's given.
           </SectionHead>
@@ -275,20 +399,6 @@ const notThis = [
           </table>
         </div>
         <a href="/docs/mailer/delivery" class="btn" style="margin-top: 32px">Delivery semantics →</a>
-      </div>
-    </section>
-
-    <section class="section" aria-labelledby="adapters">
-      <div class="container">
-        <SectionHead index="04" label="email-sdk" title="Any provider that can carry a reply." id="adapters">
-          BYO packages send In-Reply-To and References headers and put a routing token in replyTo. emailSdkMailer accepts only the email-sdk
-          adapters that carry both, and throws when it's created if the client has any other.
-        </SectionHead>
-        <p class="mono body" style="margin: 32px 0 0; max-width: 880px">
-          resend · postmark · sendgrid · cloudflare · unosend · ses · mailgun · mailersend · brevo · sparkpost · jetemail · lettermint · lettr · plunk ·
-          mailtrap · scaleway · smtp · helo
-        </p>
-        <a href="/docs/mailer/email-sdk" class="btn" style="margin-top: 32px">Supported adapters and limits →</a>
       </div>
     </section>
 
