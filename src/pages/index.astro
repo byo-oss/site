@@ -36,6 +36,7 @@ const exitSteps = [
 const preview: Record<string, { rows: [string, string][] }> = {
   notifications: { rows: [["● Payment failed", "2m"], ["○ Invite accepted", "1h"]] },
   support: { rows: [["#1042 Can't reset password", "open"], ["#1041 Invoice question", "solved"]] },
+  entitlements: { rows: [["requests · 940 / 1,000", "pro"], ["sso · upgrade to Team", "refused"]] },
   mailer: { rows: [["→ alice@example.com", "sent"], ["wraps · ses · email-sdk", "adapter"]] },
 };
 
@@ -191,6 +192,11 @@ export const auth = betterAuth({
               <td class="mono" style="color: var(--fg)">support</td>
               <td>Your support team outgrows a help desk that lives inside the product</td>
               <td class="mono" style="color: var(--fg)">Zendesk · Plain · Front</td>
+            </tr>
+            <tr>
+              <td class="mono" style="color: var(--fg)">entitlements</td>
+              <td>You bill by usage, sell credits or add-ons, or non-engineers need to edit plans</td>
+              <td class="mono" style="color: var(--fg)">Stripe Entitlements · Autumn</td>
             </tr>
             <tr>
               <td class="mono" style="color: var(--fg)">mailer</td>

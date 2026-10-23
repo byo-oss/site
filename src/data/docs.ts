@@ -8,6 +8,7 @@ export const docsSources = [
   { product: "notifications", repo: "byo-oss/notifications" },
   { product: "mailer", repo: "byo-oss/mailer" },
   { product: "support", repo: "byo-oss/support" },
+  { product: "entitlements", repo: "byo-oss/entitlements" },
 ] as const;
 
 export function docsEditUrl(product: string, slug: string): string | undefined {

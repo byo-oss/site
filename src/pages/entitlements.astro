@@ -1,0 +1,462 @@
+---
+import Frame from "../components/Frame.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import ReliesOn from "../components/ReliesOn.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { getProduct } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+const product = getProduct("entitlements");
+
+const covers = [
+  { title: "One typed catalog", text: "Features, limits and plans declared once. The API, the web app and a static pricing page import the same file, and a typo is a type error." },
+  { title: "Billing stays where it is", text: "Stripe, through @better-auth/stripe, knows which plan an organization bought. Entitlements keeps a snapshot of it and decides what the plan allows." },
+  { title: "Atomic usage counters", text: "consumeUsage is one guarded increment: no read-then-write race, and a refused call never counts against the limit." },
+  { title: "Never a 500 for a refusal", text: "Every check returns allowed, a reason and the plans that would unlock it, so the app can show the upgrade instead of an error." },
+  { title: "Staff overrides", text: "Comp a feature, raise a limit or move an organization to another plan, with a reason, an optional expiry and an audit trail." },
+  { title: "Headless first", text: "A hook owns the state and the calls. A gate and a usage meter on shadcn variables sit on top, every string overridable." },
+];
+
+const links = [
+  { label: "limit-reached notices", target: "notifications", state: "shipped", solid: true },
+  { label: "plan state", target: "@better-auth/stripe", state: "your app", solid: true },
+  { label: "resync + cleanup", target: "core · sweepAll", state: "shipped", solid: true },
+  { label: "plan + override events", target: "onEvent · after commit", state: "shipped", solid: true },
+];
+
+const plans = [
+  {
+    key: "free",
+    name: "Free",
+    used: 640,
+    limit: 1000,
+    features: [
+      ["API keys", true],
+      ["Audit log", false],
+      ["SSO", false],
+    ],
+    limits: [
+      ["seats", "3"],
+      ["agents", "2"],
+    ],
+    refusal: "audit log · not in plan · upgrade to Pro or Team",
+  },
+  {
+    key: "pro",
+    name: "Pro",
+    used: 9400,
+    limit: 10000,
+    features: [
+      ["API keys", true],
+      ["Audit log", true],
+      ["SSO", false],
+    ],
+    limits: [
+      ["seats", "10"],
+      ["agents", "10"],
+    ],
+    refusal: "sso · not in plan · upgrade to Team",
+  },
+  {
+    key: "team",
+    name: "Team",
+    used: 21000,
+    limit: 100000,
+    features: [
+      ["API keys", true],
+      ["Audit log", true],
+      ["SSO", true],
+    ],
+    limits: [
+      ["seats", "unlimited"],
+      ["agents", "50"],
+    ],
+    refusal: "every feature allowed",
+  },
+];
+
+const fmt = (n: number) => n.toLocaleString("en-US");
+---
+
+<Base title="Entitlements" description="Plans, features, limits and usage for better-auth organizations, from one typed catalog, kept in your own database." current="entitlements">
+  <div data-pagefind-body data-pagefind-meta="group:entitlements">
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy" style="flex-basis: 420px">
+          <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>entitlements</span></nav>
+          <div class="meta-row">
+            <span class="muted">{product.pkg}</span>
+            <span class="badge badge-solid">v{product.version}</span>
+          </div>
+          <h1 class="h1">Entitlements</h1>
+          <p class="tagline">May this organization do it, and how much is left?</p>
+          <p class="lead" style="margin: 0; max-width: 520px">
+            Plans, features, limits and usage for your organizations, kept in your own database. Declare the catalog once, and stop scattering plan
+            names and limits across the API, the web app and the pricing page.
+          </p>
+          <InstallTabs pkg={product.pkg} />
+          <div class="btn-row">
+            <a href={product.docsHref} class="btn btn-solid">Read the docs</a>
+            <a href="https://github.com/byo-oss/entitlements" class="btn">GitHub ↗</a>
+            <a href="#covers" class="btn">What it covers</a>
+          </div>
+        </div>
+
+        <div class="hero-art" style="flex-basis: 520px" data-pagefind-ignore>
+          <Frame gaps={[{ side: "top", at: "70%" }, { side: "left", at: "40%" }]} innerClass="plans">
+            <div class="plan-tabs" role="tablist" aria-label="Plans">
+              {
+                plans.map((p, i) => (
+                  <button type="button" role="tab" class="plan-tab" id={`plan-${p.key}`} aria-selected={i === 0 ? "true" : "false"} aria-controls={`panel-${p.key}`}>
+                    {p.name}
+                  </button>
+                ))
+              }
+            </div>
+            {
+              plans.map((p, i) => (
+                <div class="plan-panel" role="tabpanel" id={`panel-${p.key}`} aria-labelledby={`plan-${p.key}`} hidden={i !== 0}>
+                  <div class="plan-block">
+                    <div class="mono faint plan-label">
+                      <span>requests today</span>
+                      <span>
+                        {fmt(p.used)} / {fmt(p.limit)}
+                      </span>
+                    </div>
+                    <div class="plan-meter" aria-hidden="true">
+                      <span style={`width: ${Math.round((p.used / p.limit) * 100)}%`} />
+                    </div>
+                  </div>
+                  <div class="plan-block">
+                    <div class="mono faint plan-label">
+                      <span>features</span>
+                    </div>
+                    {p.features.map(([name, on]) => (
+                      <div class="plan-row">
+                        <span>{name}</span>
+                        <span class:list={["mono", on ? "plan-yes" : "faint"]}>{on ? "allowed" : "not in plan"}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div class="plan-block">
+                    <div class="mono faint plan-label">
+                      <span>limits</span>
+                    </div>
+                    {p.limits.map(([name, value]) => (
+                      <div class="plan-row">
+                        <span>{name}</span>
+                        <span class="mono">{value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div class="plan-check mono">
+                    <span class="faint">hasFeature →</span> {p.refusal}
+                  </div>
+                </div>
+              ))
+            }
+          </Frame>
+          <p class="mono faint" style="margin: 14px 0 0; font-size: 12px">Illustration. Pick a plan to see what it allows.</p>
+        </div>
+      </div>
+    </section>
+
+    <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version}`} />
+
+    <section id="covers" class="section" aria-labelledby="covers-h">
+      <div class="container">
+        <SectionHead index="01" label="what it covers" title="The whole domain, at a young product's depth." id="covers-h">
+          Built to the BYO conventions from day one: your identity, your permissions, your database.
+        </SectionHead>
+        <div class="cells" style="margin-top: 56px; --cell-min: 260px">
+          {
+            covers.map((c, i) => (
+              <div class="cell">
+                <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+                <h3 class="h3">{c.title}</h3>
+                <p class="body">{c.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="fits">
+      <div class="container">
+        <SectionHead index="02" label="part of byo" title="Better with the others." id="fits">
+          Packages share one identity, one permission model and one notification path, so each one you add makes the others more useful.
+        </SectionHead>
+        <ul class="flow">
+          {
+            links.map((l) => (
+              <li class="flow-row">
+                <span class="flow-source mono">{product.pkg}</span>
+                <span class="flow-edge mono">
+                  <span class="flow-line" aria-hidden="true" />
+                  <span>{l.label}</span>
+                  <span aria-hidden="true">→</span>
+                </span>
+                <span class:list={["flow-target mono", { "is-proposed": !l.solid }]}>
+                  <span>{l.target}</span>
+                  <span class="faint" style="font-size: 11px">{l.state}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="outgrow">
+      <div class="container">
+        <SectionHead index="03" label="outgrowing this" title="A way out, planned from the start." id="outgrow">
+          When you bill by usage, sell credits or add-ons, or need non-engineers to edit plans, you move to a dedicated entitlements service.
+          Entitlements ships with exportEntitlementsData, a documented schema, a field mapping to Stripe Entitlements and Autumn, and a clean
+          uninstall.
+        </SectionHead>
+        <div class="exit-grid">
+          {
+            product.exitTo.map((name) => (
+              <div class="exit-card">
+                <span class="mono" style="font-size: 20px">{name}</span>
+                <span class="mono faint" style="font-size: 12px">
+                  {name === "Stripe Entitlements" || name === "Autumn" ? "field mapping in the docs" : "named in the docs"}
+                </span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section aria-labelledby="follow" class="section">
+      <div class="container" style="padding-block: 96px">
+        <Frame gaps={[{ side: "top", at: "22%" }, { side: "bottom", at: "70%" }]} innerClass="follow">
+          <div class="follow-copy">
+            <div class="mono muted" style="font-size: 13px">&gt;_ building in the open</div>
+            <h2 id="follow" class="mono follow-title">Shape what comes next.</h2>
+            <p class="lead" style="margin: 0; max-width: 520px">Issues and pull requests are on GitHub. Tell us how you price today, and what would make the package fit.</p>
+          </div>
+          <div class="btn-row">
+            <a href="https://github.com/byo-oss/entitlements" class="btn btn-solid">Follow on GitHub ↗</a>
+            <a href="/notifications" class="btn">See notifications</a>
+          </div>
+        </Frame>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Other pages" class="container pager">
+    <a href="/support" class="pager-link"><span class="mono faint">← previous</span><span class="mono">Support</span></a>
+    <a href="/mailer" class="pager-link is-next"><span class="mono faint">next →</span><span class="mono">Mailer</span></a>
+  </nav>
+</Base>
+
+<script>
+  const tabs = [...document.querySelectorAll<HTMLButtonElement>(".plan-tab")];
+
+  function select(tab: HTMLButtonElement) {
+    for (const t of tabs) {
+      const selected = t === tab;
+      t.setAttribute("aria-selected", String(selected));
+      t.tabIndex = selected ? 0 : -1;
+      const panel = document.getElementById(t.getAttribute("aria-controls") ?? "");
+      if (panel) panel.hidden = !selected;
+    }
+  }
+
+  tabs.forEach((tab, i) => {
+    tab.tabIndex = i === 0 ? 0 : -1;
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      const next = tabs[(i + step + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+</script>
+
+<style>
+  .hero-art :global(.plans) {
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .plan-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .plan-tab {
+    flex: 1;
+    min-height: 48px;
+    background: transparent;
+    color: var(--fg);
+    border: 0;
+    border-right: 1px solid var(--line);
+    font: inherit;
+    font-size: 14px;
+  }
+
+  .plan-tab:last-child {
+    border-right: 0;
+  }
+
+  .plan-tab:hover {
+    background: var(--hover);
+  }
+
+  .plan-tab[aria-selected="true"] {
+    background: var(--raise);
+    box-shadow: inset 0 -2px 0 var(--fg);
+  }
+
+  .plan-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .plan-panel[hidden] {
+    display: none;
+  }
+
+  .plan-block {
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .plan-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+  }
+
+  .plan-meter {
+    height: 8px;
+    background: var(--line);
+  }
+
+  .plan-meter span {
+    display: block;
+    height: 100%;
+    background: var(--fg);
+  }
+
+  .plan-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .plan-yes {
+    color: var(--strong);
+  }
+
+  .plan-check {
+    margin-top: auto;
+    padding: 14px 18px;
+    font-size: 12px;
+    color: var(--strong);
+  }
+
+  .flow {
+    margin: 56px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .flow-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 0;
+  }
+
+  .flow-source {
+    flex: 0 0 220px;
+    padding: 18px 20px;
+    border: 1px solid var(--fg);
+    font-size: 14px;
+  }
+
+  .flow-edge {
+    flex: 1 1 200px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    font-size: 12px;
+    color: var(--text-3);
+  }
+
+  .flow-line {
+    flex: 1;
+    border-top: 1px dashed var(--dash);
+  }
+
+  .flow-target {
+    flex: 0 0 260px;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .flow-target.is-proposed {
+    border-style: dashed;
+  }
+
+  .exit-grid {
+    margin-top: 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .exit-card {
+    padding: 24px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hero-art :global(.follow),
+  :global(.follow) {
+    padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 64px);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 32px;
+  }
+
+  .follow-copy {
+    flex: 1 1 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .follow-title {
+    margin: 0;
+    font-size: clamp(32px, 4.2vw, 54px);
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+</style>

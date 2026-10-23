@@ -57,6 +57,9 @@ const editUrl = docsEditUrl(productSlug, entry.id.split("/").slice(1).join("/"))
             <a href="/docs/support/quickstart" class="switcher-item" aria-current={product.slug === "support" ? "page" : undefined}>
               <span>support</span><span class="faint">{getProduct("support").version ?? "in development"}</span>
             </a>
+            <a href="/docs/entitlements/quickstart" class="switcher-item" aria-current={product.slug === "entitlements" ? "page" : undefined}>
+              <span>entitlements</span><span class="faint">{getProduct("entitlements").version ?? "in development"}</span>
+            </a>
             <a href="/conventions" class="switcher-item"><span>conventions</span><span class="faint">spec</span></a>
           </div>
         </div>
