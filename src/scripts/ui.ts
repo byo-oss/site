@@ -10,6 +10,14 @@ function store(key: string, value: string) {
   }
 }
 
+function forget(key: string) {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Nothing stored to forget.
+  }
+}
+
 function read(key: string): string | null {
   try {
     return localStorage.getItem(key);
@@ -26,12 +34,23 @@ function effectiveTheme(): "light" | "dark" {
   return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
 }
 
+// "system" drops the saved choice, so the CSS falls back to prefers-color-scheme.
+function setTheme(theme: "light" | "dark" | "system") {
+  if (theme === "system") {
+    delete root.dataset.theme;
+    forget("byo-theme");
+  } else {
+    root.dataset.theme = theme;
+    store("byo-theme", theme);
+  }
+}
+
+function toggleTheme() {
+  setTheme(effectiveTheme() === "light" ? "dark" : "light");
+}
+
 for (const button of document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]")) {
-  button.addEventListener("click", () => {
-    const next = effectiveTheme() === "light" ? "dark" : "light";
-    root.dataset.theme = next;
-    store("byo-theme", next);
-  });
+  button.addEventListener("click", toggleTheme);
 }
 
 /* ---------- popovers (products menu, docs product switcher) ---------- */
@@ -257,13 +276,18 @@ input?.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  const typing = (event.target as Element).closest("input, textarea, [contenteditable]");
+  const typing = (event.target as Element).closest("input, textarea, select, [contenteditable]");
+  const modified = event.metaKey || event.ctrlKey || event.altKey;
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
     event.preventDefault();
     openSearch();
   } else if (event.key === "/" && !typing) {
     event.preventDefault();
     openSearch();
+  } else if (event.key.toLowerCase() === "d" && !typing && !modified && !event.repeat && !event.isComposing) {
+    // D toggles light and dark; Shift+D goes back to the system setting. Bare keys only, so ⌘D still bookmarks.
+    if (event.shiftKey) setTheme("system");
+    else toggleTheme();
   }
 });
 
