@@ -4,7 +4,7 @@ import CodeBlock from "../components/CodeBlock.astro";
 import Frame from "../components/Frame.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import SectionHead from "../components/SectionHead.astro";
-import Wordmark from "../components/Wordmark.astro";
+import HeroArt from "../components/HeroArt.astro";
 import { GITHUB_ORG, NPM_ORG, products, reliesOnLine } from "../data/site";
 import Base from "../layouts/Base.astro";
 
@@ -56,7 +56,7 @@ export const auth = betterAuth({
 ---
 
 <Base title="BYO" description="Open-source, MIT-licensed packages for better-auth apps: notifications, support and more. Libraries, not services: your app, your database, your users.">
-  <section class="section">
+  <section class="section hero-section">
     <div class="container home-hero">
       <div class="hero-copy">
         <div class="mono muted" style="font-size: 13px">&gt;_ bring your own</div>
@@ -72,15 +72,7 @@ export const auth = betterAuth({
         </div>
       </div>
       <div class="hero-art">
-        <Frame gaps={[{ side: "top", at: "50%" }, { side: "left", at: "44%" }, { side: "bottom", at: "44%" }]} innerClass="hero-art-inner">
-          <span class="mono faint hero-art-corner tl" aria-hidden="true">&gt;_</span>
-          <span class="mono faint hero-art-corner tr" aria-hidden="true">▮▮ ▯ ▮▮▮</span>
-          <div class="hero-mark">
-            <Wordmark scale={8} label="BYO" class="hero-mark-svg" />
-            <div class="hero-mark-lines" aria-hidden="true"></div>
-          </div>
-          <span class="mono faint hero-art-corner br" aria-hidden="true">[ byo.dev ]</span>
-        </Frame>
+        <HeroArt />
       </div>
     </div>
   </section>
@@ -256,54 +248,8 @@ export const auth = betterAuth({
     letter-spacing: -0.04em;
   }
 
-  .hero-art :global(.hero-art-inner) {
-    min-height: clamp(300px, 38vw, 470px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 24px;
-  }
-
-  .hero-art-corner {
-    position: absolute;
-    font-size: 12px;
-  }
-
-  .hero-art-corner.tl {
-    top: 18px;
-    left: 20px;
-  }
-
-  .hero-art-corner.tr {
-    top: 18px;
-    right: 20px;
-    font-size: 11px;
-    letter-spacing: 0.1em;
-  }
-
-  .hero-art-corner.br {
-    bottom: 16px;
-    right: 20px;
-    font-size: 11px;
-  }
-
-  .hero-mark {
-    position: relative;
-    width: 100%;
-    max-width: 392px;
-  }
-
-  .hero-mark :global(.hero-mark-svg) {
-    width: 100%;
-    height: auto;
-    color: var(--fg);
-  }
-
-  .hero-mark-lines {
-    position: absolute;
-    inset: 46% 0 0;
-    pointer-events: none;
-    background-image: repeating-linear-gradient(0deg, var(--lines) 0 2px, transparent 2px 4px);
+  .hero-section {
+    overflow-x: clip;
   }
 
   .product-grid {

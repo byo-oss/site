@@ -2,6 +2,7 @@
 import { cellsFor } from "../lib/cells";
 import CodeBlock from "../components/CodeBlock.astro";
 import Frame from "../components/Frame.astro";
+import HeroArt from "../components/HeroArt.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import ReliesOn from "../components/ReliesOn.astro";
 import SectionHead from "../components/SectionHead.astro";
@@ -201,6 +202,7 @@ const notThis = [
         </div>
 
         <div class="hero-art" data-pagefind-ignore>
+          <HeroArt variant="ambient" />
           <Frame gaps={[{ side: "top", at: "30%" }, { side: "right", at: "72%" }]} innerStyle="display: flex; flex-direction: column">
             <div class="pick" role="tablist" aria-label="Adapters">
               {

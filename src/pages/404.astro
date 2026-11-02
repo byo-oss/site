@@ -1,11 +1,12 @@
 ---
-import Frame from "../components/Frame.astro";
+import HeroArt from "../components/HeroArt.astro";
 import Base from "../layouts/Base.astro";
 ---
 
 <Base title="Not found" description="This page doesn't exist.">
-  <div class="container" style="padding-block: 96px">
-    <Frame gaps={[{ side: "top", at: "60%" }, { side: "left", at: "40%" }]} innerStyle="padding: clamp(40px, 6vw, 80px) clamp(20px, 5vw, 64px); display: flex; flex-direction: column; align-items: flex-start; gap: 20px">
+  <div class="container not-found">
+    <HeroArt variant="notfound" />
+    <div class="not-found-copy">
       <div class="mono muted" style="font-size: 13px">&gt;_ 404</div>
       <h1 class="h1">Nothing here.</h1>
       <p class="lead" style="margin: 0">The page moved or never existed. Try search, or start from one of these.</p>
@@ -14,6 +15,23 @@ import Base from "../layouts/Base.astro";
         <a href="/docs/notifications/quickstart" class="btn">Docs</a>
         <button type="button" class="btn" data-search-open>Search ⌘K</button>
       </div>
-    </Frame>
+    </div>
   </div>
 </Base>
+
+<style>
+  .not-found {
+    padding-block: clamp(32px, 6vw, 72px) 96px;
+    overflow-x: clip;
+  }
+
+  .not-found-copy {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+    max-width: 640px;
+    margin-inline: auto;
+  }
+</style>

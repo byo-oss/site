@@ -1,6 +1,7 @@
 ---
 import { cellsFor } from "../lib/cells";
 import Frame from "../components/Frame.astro";
+import HeroArt from "../components/HeroArt.astro";
 import InstallTabs from "../components/InstallTabs.astro";
 import ReliesOn from "../components/ReliesOn.astro";
 import SectionHead from "../components/SectionHead.astro";
@@ -84,6 +85,7 @@ const tickets = [
         </div>
 
         <div class="hero-art" style="flex-basis: 520px" data-pagefind-ignore>
+          <HeroArt variant="ambient" />
           <Frame gaps={[{ side: "top", at: "70%" }, { side: "left", at: "40%" }]} innerClass="desk">
             <div class="desk-list" role="tablist" aria-label="Tickets" aria-orientation="vertical">
               <div class="mono muted desk-list-head"><span>Open · 3</span><span>agent view</span></div>

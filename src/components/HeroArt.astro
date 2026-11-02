@@ -1,0 +1,196 @@
+---
+// The wordmark in a haze of pixel debris, circuit traces and data drips, standing on a reflection. Decoration
+// only, drawn from currentColor so both themes work. Strength is set by --hero-haze, --hero-debris and
+// --hero-refl in global.css. The geometry for each variant is built in src/lib/hero-art.ts.
+import { buildArt, type Variant } from "../lib/hero-art";
+import { products } from "../data/site";
+
+interface Props {
+  variant?: Variant;
+}
+
+const { variant = "hero" } = Astro.props;
+const art = buildArt(variant, products);
+const { stage } = art;
+const id = (name: string) => `ha-${variant}-${name}`;
+const ref = (name: string) => `url(#${id(name)})`;
+// The art sits behind the copy it shares a page with and says nothing a reader needs, except as the logo.
+const labelled = variant === "hero" || variant === "footer";
+const maxWidth = { hero: 784, footer: 960, notfound: 784, ambient: 784 }[variant];
+---
+
+<svg
+  class={`hero-art-svg is-${variant}`}
+  viewBox={art.viewBox}
+  role={labelled ? "img" : undefined}
+  aria-label={labelled ? "BYO" : undefined}
+  aria-hidden={labelled ? undefined : "true"}
+  style={`--art-step: ${art.step}px; --art-max: ${maxWidth}px`}
+  data-pagefind-ignore
+>
+  <defs>
+    {
+      art.blurs.map((b) => (
+        <filter id={id(`b${b}`)} x="-60%" y="-150%" width="220%" height="400%">
+          <feGaussianBlur stdDeviation={b} />
+        </filter>
+      ))
+    }
+    <filter id={id("smoke")} x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.011" numOctaves="4" seed={art.smoke.seed} result="n"></feTurbulence>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  1.6 0 0 0 -0.62"></feColorMatrix>
+    </filter>
+    <radialGradient id={id("fade")} cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff"></stop>
+      <stop offset="1" stop-color="#000"></stop>
+    </radialGradient>
+    <mask id={id("noise")} maskUnits="userSpaceOnUse" x={stage.x} y={stage.y} width={stage.width} height={stage.height}>
+      <rect x={stage.x} y={stage.y} width={stage.width} height={stage.height} fill="#fff" filter={ref("smoke")}></rect>
+    </mask>
+    <mask id={id("vignette")} maskUnits="userSpaceOnUse" x={stage.x} y={stage.y} width={stage.width} height={stage.height}>
+      <ellipse cx={art.smoke.cx} cy={art.smoke.cy} rx={art.smoke.rx} ry={art.smoke.ry} fill={ref("fade")}></ellipse>
+    </mask>
+    {
+      art.refl && (
+        <>
+          <linearGradient id={id("floor")} gradientUnits="userSpaceOnUse" x1="0" y1={art.refl.y1} x2="0" y2={art.refl.y2}>
+            <stop offset="0" stop-color="#fff"></stop>
+            <stop offset="1" stop-color="#000"></stop>
+          </linearGradient>
+          <mask id={id("reflect")} maskUnits="userSpaceOnUse" x={stage.x} y={art.refl.y1 - 10} width={stage.width} height={art.refl.y2 - art.refl.y1 + 20}>
+            <rect x={stage.x} y={art.refl.y1 - 10} width={stage.width} height={art.refl.y2 - art.refl.y1 + 20} fill={ref("floor")}></rect>
+          </mask>
+          <filter id={id("soft")} x="-5%" y="-20%" width="110%" height="140%">
+            <feGaussianBlur stdDeviation={art.refl.blur}></feGaussianBlur>
+          </filter>
+        </>
+      )
+    }
+    <linearGradient id={id("horizon")}>
+      <stop offset="0" stop-color="currentColor" stop-opacity="0"></stop>
+      <stop offset=".5" stop-color="currentColor" stop-opacity=".18"></stop>
+      <stop offset="1" stop-color="currentColor" stop-opacity="0"></stop>
+    </linearGradient>
+    {art.hasMark && <path id={id("ink")} d={art.inkD} transform={art.inkTransform}></path>}
+    {
+      art.slices.map((s, i) => (
+        <clipPath id={id(`slice${i}`)}>
+          <rect x={stage.x - 80} y={s.y} width={stage.width + 160} height={s.height}></rect>
+        </clipPath>
+      ))
+    }
+  </defs>
+
+  <g class="ha-haze" style="opacity: var(--hero-haze)">
+    {art.haze.map((h) => <ellipse cx={h.cx} cy={h.cy} rx={h.rx} ry={h.ry} fill="currentColor" fill-opacity={h.op} filter={ref(`b${h.blur}`)}></ellipse>)}
+    <g class="ha-smoke" mask={ref("vignette")}>
+      <rect x={stage.x} y={stage.y} width={stage.width} height={stage.height} fill="currentColor" opacity={art.smoke.op} mask={ref("noise")}></rect>
+    </g>
+  </g>
+
+  <g class="ha-debris" style="opacity: var(--hero-debris)">
+    <g class="ha-traces" fill="none" stroke="currentColor" stroke-width="1">
+      {
+        art.traces.map((t) => (
+          <>
+            <path d={t.d} stroke-opacity=".34"></path>
+            <path d={t.d} transform="translate(-6 -6)" stroke-opacity=".18"></path>
+            <path d={t.d} transform="translate(-12 -12)" stroke-opacity=".1"></path>
+            <rect x={t.end[0] - 3} y={t.end[1] - 3} width="6" height="6" fill="currentColor" fill-opacity=".6" stroke="none"></rect>
+          </>
+        ))
+      }
+    </g>
+    <g shape-rendering="crispEdges" fill="currentColor">
+      {art.scatter.map((b) => <path d={b.d} fill-opacity={b.op}></path>)}
+      <g class="ha-streaks">
+        {art.streaks.map((s) => <rect x={s.x} y={s.y} width={s.width} height="2" fill-opacity={s.op}></rect>)}
+      </g>
+    </g>
+    <g class="ha-frags" fill="currentColor">
+      {art.frags.map((f) => <text x={f.x} y={f.y} fill-opacity={f.op}>{f.text}</text>)}
+      {art.rain.map((r) => <text x={r.x} y={r.y} fill-opacity={r.op}>{r.ch}</text>)}
+    </g>
+    {art.horizon && <rect x={art.horizon.x} y={art.horizon.y} width={art.horizon.width} height="1" fill={ref("horizon")}></rect>}
+  </g>
+
+  {
+    art.hasMark && (
+      <>
+        <g class="ha-mark" shape-rendering="crispEdges" fill="currentColor">
+          {art.flakes.map((b) => <path d={b.d} fill-opacity={b.op}></path>)}
+          <use href={`#${id("ink")}`}></use>
+          {
+            art.slices.map((s, i) => (
+              <g clip-path={ref(`slice${i}`)}>
+                <use href={`#${id("ink")}`} x={s.dx} fill-opacity=".6"></use>
+              </g>
+            ))
+          }
+          <g class="ha-drips" style="opacity: var(--hero-debris)">
+            {art.drips.map((b) => <path d={b.d} fill-opacity={b.op}></path>)}
+          </g>
+        </g>
+        <g mask={ref("reflect")} style="opacity: var(--hero-refl)">
+          <g filter={ref("soft")} fill="currentColor">
+            <g transform={art.reflTransform} shape-rendering="crispEdges">
+              <use href={`#${id("ink")}`}></use>
+              {art.flakes.map((b) => <path d={b.d} fill-opacity={b.op}></path>)}
+            </g>
+          </g>
+        </g>
+      </>
+    )
+  }
+</svg>
+
+<style is:global>
+  .hero-art-svg {
+    display: block;
+    width: 100%;
+    max-width: var(--art-max, 784px);
+    height: auto;
+    margin-inline: auto;
+    overflow: visible;
+    color: var(--fg);
+  }
+
+  /* Cells are 14 stage units, so a width in steps of one px per cell puts every pixel on a whole device pixel. */
+  @supports (width: round(down, 100%, 56px)) {
+    .hero-art-svg {
+      width: min(var(--art-max, 784px), round(down, 100%, var(--art-step, 56px)));
+    }
+  }
+
+  .hero-art-svg text {
+    font-family: var(--font-mono);
+    font-size: 10px;
+  }
+
+  /* The art that sits behind a product page's demo, centred on it and wider than it. */
+  .hero-art-svg.is-ambient {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    z-index: -1;
+    width: calc(100% + 80px);
+    max-width: none;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* Stacked layout: the traces and the left-hand streaks have nothing to lead to. */
+  @media (max-width: 1000px) {
+    .hero-art-svg.is-hero .ha-traces,
+    .hero-art-svg.is-hero .ha-streaks {
+      display: none;
+    }
+  }
+
+  /* The noise is the costly part on a phone. */
+  @media (max-width: 720px) {
+    .hero-art-svg .ha-smoke {
+      display: none;
+    }
+  }
+</style>

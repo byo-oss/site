@@ -1,0 +1,5 @@
+// The BYO pixel wordmark: a path on a 49×13 grid, one unit per pixel. Shared by the <Wordmark> component
+// and the hero art, which needs the pixels as cells (to dissolve, flake and reflect them).
+export const WORDMARK_PATH =
+  "M9 1h8v1h-8zM20 1h3v1h-3zM26 1h3v1h-3zM32 1h7v1h-7zM9 2h9v1h-9zM20 2h3v1h-3zM26 2h3v1h-3zM31 2h9v1h-9zM4 3h3v1h-3zM9 3h3v1h-3zM15 3h3v1h-3zM20 3h3v1h-3zM26 3h3v1h-3zM31 3h3v1h-3zM37 3h3v1h-3zM42 3h3v1h-3zM3 4h3v1h-3zM9 4h3v1h-3zM15 4h3v1h-3zM21 4h3v1h-3zM25 4h3v1h-3zM31 4h3v1h-3zM37 4h3v1h-3zM43 4h3v1h-3zM2 5h3v1h-3zM9 5h8v1h-8zM22 5h5v1h-5zM31 5h3v1h-3zM37 5h3v1h-3zM44 5h3v1h-3zM1 6h3v1h-3zM9 6h9v1h-9zM23 6h3v1h-3zM31 6h3v1h-3zM37 6h3v1h-3zM45 6h3v1h-3zM2 7h3v1h-3zM9 7h3v1h-3zM15 7h3v1h-3zM23 7h3v1h-3zM31 7h3v1h-3zM37 7h3v1h-3zM44 7h3v1h-3zM3 8h3v1h-3zM9 8h3v1h-3zM15 8h3v1h-3zM23 8h3v1h-3zM31 8h3v1h-3zM37 8h3v1h-3zM43 8h3v1h-3zM4 9h3v1h-3zM9 9h3v1h-3zM15 9h3v1h-3zM23 9h3v1h-3zM31 9h3v1h-3zM37 9h3v1h-3zM42 9h3v1h-3zM9 10h9v1h-9zM23 10h3v1h-3zM31 10h9v1h-9zM9 11h8v1h-8zM23 11h3v1h-3zM32 11h7v1h-7z";
+export const WORDMARK_GRID = { width: 49, height: 13 } as const;
