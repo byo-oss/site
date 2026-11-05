@@ -9,7 +9,7 @@
     "build": "pnpm docs:fetch && astro build && pagefind --site dist",
     "preview": "pnpm build && wrangler dev",
     "deploy": "pnpm build && wrangler deploy",
-    "check": "astro check"
+    "check": "pnpm docs:fetch && astro check"
   },
   "dependencies": {
     "@astrojs/markdown-satteri": "0.4.4",
@@ -21,7 +21,9 @@
     "astro": "^7.4.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.12",
     "pagefind": "^1.5.2",
+    "typescript": "^6.0.3",
     "wrangler": "^4.151.1"
   }
 }
