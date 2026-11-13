@@ -126,7 +126,7 @@ const sources: ProductSource[] = [
         requirement: "required",
         kind: "peer",
         peer: true,
-        text: "Validation uses your app's copy. An app still on zod 3 has to move to zod 4 first.",
+        text: "Validation uses your app's copy, which must be 4.6.6 or later. An app on an older zod, zod 3 included, has to move first.",
       },
       {
         name: "organization",
@@ -207,7 +207,7 @@ const sources: ProductSource[] = [
         requirement: "required",
         kind: "peer",
         peer: true,
-        text: "Validation uses your app's copy. An app still on zod 3 has to move to zod 4 first.",
+        text: "Validation uses your app's copy, which must be 4.6.6 or later. An app on an older zod, zod 3 included, has to move first.",
       },
       {
         name: "organization",
