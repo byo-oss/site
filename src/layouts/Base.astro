@@ -8,7 +8,7 @@ import Search from "../components/Search.astro";
 interface Props {
   title: string;
   description: string;
-  current?: "notifications" | "support" | "entitlements" | "mailer" | "core" | "conventions" | "docs";
+  current?: "notifications" | "support" | "entitlements" | "mailer" | "core" | "conventions" | "changelog" | "docs";
   docs?: boolean;
 }
 
@@ -47,6 +47,7 @@ const fullTitle = title === "BYO" ? "BYO: open-source packages for better-auth a
         document.documentElement.dataset.version = "latest";
       }
     </script>
+    <slot name="head" />
     <HighlightStyles />
   </head>
   <body>

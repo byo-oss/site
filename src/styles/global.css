@@ -666,6 +666,13 @@ code {
   font-size: 13px;
 }
 
+/* Five links don't fit one row on a phone; the footer and every product page still link GitHub. */
+@media (max-width: 520px) {
+  .main-nav .nav-github {
+    display: none;
+  }
+}
+
 .main-nav a,
 .nav-trigger {
   padding: 12px 0;

@@ -1,0 +1,221 @@
+---
+import { GITHUB_ORG, products } from "../data/site";
+import Base from "../layouts/Base.astro";
+import { getReleases } from "../lib/changelog";
+
+const releases = await getReleases();
+const packages = products.filter((p) => releases.some((r) => r.slug === p.slug));
+const fmt = new Intl.DateTimeFormat("en-CA", { dateStyle: "short", timeZone: "UTC" });
+---
+
+<Base title="Changelog" description="Every release of every BYO package, newest first, from GitHub." current="changelog">
+  <link slot="head" rel="alternate" type="application/rss+xml" title="BYO changelog" href="/changelog.xml" />
+  <div data-pagefind-body data-pagefind-meta="group:changelog">
+    <section class="section">
+      <div class="container" style="padding-block: clamp(48px, 7vw, 88px) clamp(32px, 4vw, 56px); display: flex; flex-direction: column; gap: 26px">
+        <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>changelog</span></nav>
+        <h1 class="h1">Changelog</h1>
+        <p class="tagline" style="max-width: 820px">Every release of every BYO package, newest first.</p>
+        <p class="lead" style="margin: 0; max-width: 680px">
+          Read from GitHub releases at build time and rebuilt every night. Each entry shows the start of the release notes. The full notes are on GitHub.
+        </p>
+      </div>
+    </section>
+
+    <div class="container changelog">
+      <aside class="follow" aria-labelledby="follow-h">
+        <h2 id="follow-h" class="mono follow-h">&gt;_ follow along</h2>
+        <p class="body">There is no mailing list. BYO ships on GitHub, so notifications come from there.</p>
+        <ul class="follow-list">
+          <li><span class="mono">star</span> the repos you use, at <a href={GITHUB_ORG}>github.com/byo-oss</a>.</li>
+          <li><span class="mono">watch</span> a repo for releases only: Watch, then Custom, then Releases.</li>
+          <li><span class="mono">follow</span> <a href={GITHUB_ORG}>github.com/byo-oss</a> to see new packages as they appear.</li>
+        </ul>
+        <p class="body">Or subscribe to the <a href="/changelog.xml">RSS feed</a>.</p>
+      </aside>
+
+      <div class="filter" data-filter hidden role="group" aria-label="Filter by package">
+        <button type="button" class="btn filter-btn" data-package="" aria-pressed="true">All</button>
+        {packages.map((p) => <button type="button" class="btn filter-btn" data-package={p.slug} aria-pressed="false">{p.slug}</button>)}
+      </div>
+
+      <ol class="entries">
+        {
+          releases.map((r) => (
+            <li class="entry" data-pkg={r.slug}>
+              <header class="entry-head">
+                <a href={`/${r.slug}`} class="mono entry-pkg">{r.pkg}</a>
+                <span class="badge badge-strong">{r.version}</span>
+                <time class="mono faint" datetime={r.date.toISOString()}>{fmt.format(r.date)}</time>
+              </header>
+              {r.html && <div class="entry-body" set:html={r.html} />}
+              <a href={r.url} class="entry-link mono">Full notes on GitHub ↗</a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="body muted filter-empty" hidden>No releases for this package yet.</p>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .changelog {
+    padding-top: clamp(32px, 4vw, 48px);
+    padding-bottom: clamp(48px, 6vw, 96px);
+    max-width: 880px;
+    margin-inline: 0 auto;
+  }
+  .follow {
+    border: 1px solid var(--border);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .follow-h {
+    margin: 0;
+    font-size: 16px;
+  }
+  .follow-list {
+    margin: 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-2);
+  }
+  .follow a,
+  .entry-body :global(a) {
+    color: var(--fg);
+    text-underline-offset: 3px;
+  }
+  .follow .mono {
+    color: var(--fg);
+  }
+  .filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .filter[hidden],
+  .entry[hidden],
+  .filter-empty[hidden] {
+    display: none;
+  }
+  .filter-btn {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .filter-btn[aria-pressed="true"] {
+    background: var(--fg);
+    border-color: var(--fg);
+    color: var(--bg);
+  }
+  .entries {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .entry {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-block: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .entry-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+  }
+  .entry-pkg {
+    font-size: 16px;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .entry-pkg:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .entry-body {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--text-2);
+    overflow-wrap: anywhere;
+  }
+  .entry-body :global(p),
+  .entry-body :global(ul),
+  .entry-body :global(ol) {
+    margin: 0;
+  }
+  .entry-body :global(ul),
+  .entry-body :global(ol) {
+    padding-left: 20px;
+  }
+  .entry-body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    background: var(--raise);
+    padding: 1px 4px;
+  }
+  .entry-body :global(pre) {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    background: var(--panel);
+    border: 1px solid var(--line);
+  }
+  .entry-body :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+  .entry-link {
+    font-size: 13px;
+    color: var(--text-3);
+    width: fit-content;
+  }
+  .entry-link:hover {
+    color: var(--fg);
+  }
+</style>
+
+<script>
+  // Without this script every release stays listed and the filter stays hidden.
+  const bar = document.querySelector<HTMLElement>("[data-filter]");
+  if (bar) {
+    const buttons = [...bar.querySelectorAll<HTMLButtonElement>("[data-package]")];
+    const entries = [...document.querySelectorAll<HTMLElement>(".entry")];
+    const empty = document.querySelector<HTMLElement>(".filter-empty");
+    const known = new Set(buttons.map((b) => b.dataset.package));
+
+    const apply = (pkg: string, push: boolean) => {
+      if (!known.has(pkg)) pkg = "";
+      let shown = 0;
+      for (const entry of entries) {
+        const show = !pkg || entry.dataset.pkg === pkg;
+        entry.hidden = !show;
+        if (show) shown++;
+      }
+      for (const b of buttons) b.setAttribute("aria-pressed", String(b.dataset.package === pkg));
+      if (empty) empty.hidden = shown > 0;
+      if (push) {
+        const url = new URL(location.href);
+        if (pkg) url.searchParams.set("package", pkg);
+        else url.searchParams.delete("package");
+        history.replaceState(null, "", url);
+      }
+    };
+
+    bar.hidden = false;
+    for (const b of buttons) b.addEventListener("click", () => apply(b.dataset.package ?? "", true));
+    apply(new URLSearchParams(location.search).get("package") ?? "", false);
+  }
+</script>
