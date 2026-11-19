@@ -63,8 +63,10 @@ const fmt = new Intl.DateTimeFormat("en-CA", { dateStyle: "short", timeZone: "UT
   .changelog {
     padding-top: clamp(32px, 4vw, 48px);
     padding-bottom: clamp(48px, 6vw, 96px);
-    max-width: 880px;
-    margin-inline: 0 auto;
+  }
+  /* Keep .container's centering; only the reading width is narrower. */
+  .changelog > * {
+    max-width: 816px;
   }
   .follow {
     border: 1px solid var(--border);
