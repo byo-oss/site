@@ -39,6 +39,7 @@ const preview: Record<string, { rows: [string, string][] }> = {
   support: { rows: [["plugins: [support()]", ""], ["// ./react: SupportInbox", ""]] },
   entitlements: { rows: [["entitlements({ catalog })", ""], ["// defineEntitlements(…)", ""]] },
   mailer: { rows: [["wrapsMailer({ … })", ""], ["// or ./ses, ./email-sdk", ""]] },
+  core: { rows: [["createEventBus([…])", ""], ["// sweepAll(auth)", ""]] },
 };
 
 const composeCode = `import { betterAuth } from "better-auth";
@@ -196,6 +197,11 @@ export const auth = betterAuth({
               <td class="mono" style="color: var(--fg)">mailer</td>
               <td>You change providers, or need templates, attachments, cc or bcc, or batch sending</td>
               <td class="mono" style="color: var(--fg)">another adapter · your provider's SDK</td>
+            </tr>
+            <tr>
+              <td class="mono" style="color: var(--fg)">core</td>
+              <td>You'd rather wire each plugin's sweep, cleanup and onEvent yourself</td>
+              <td class="mono" style="color: var(--fg)">each plugin's own sweep and cleanup</td>
             </tr>
           </tbody>
         </table>

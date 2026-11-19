@@ -284,6 +284,31 @@ const sources: ProductSource[] = [
       },
     ],
   },
+  {
+    slug: "core",
+    name: "Core",
+    pkg: "@byo-oss/core",
+    summary: "The shared library for apps that run two or more BYO packages: one event bus, one cron route and one org-cleanup call. Not a feature: no tables, no endpoints.",
+    menuText: "Shared by BYO packages: one event bus, one cron route, one cleanup call.",
+    exitTo: ["each plugin's own sweep and cleanup"],
+    docsHref: "/docs/core/quickstart",
+    repo: "https://github.com/byo-oss/core",
+    dependencies: [
+      {
+        name: "better-auth",
+        requirement: "required",
+        kind: "peer",
+        peer: true,
+        text: "Core reads the plugins you pass to betterAuth({ plugins }). It has no runtime dependency on better-auth and adds no tables.",
+      },
+      {
+        name: "organization",
+        requirement: "optional",
+        kind: "better-auth plugin",
+        text: "Call the cleanup fan-out from its organizationHooks when an organization is deleted or a member is removed.",
+      },
+    ],
+  },
 ];
 
 export const products: Product[] = await Promise.all(

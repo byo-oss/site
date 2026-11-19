@@ -1,0 +1,313 @@
+---
+import { cellsFor } from "../lib/cells";
+import CodeBlock from "../components/CodeBlock.astro";
+import Frame from "../components/Frame.astro";
+import HeroArt from "../components/HeroArt.astro";
+import InstallTabs from "../components/InstallTabs.astro";
+import ReliesOn from "../components/ReliesOn.astro";
+import SectionHead from "../components/SectionHead.astro";
+import { getProduct } from "../data/site";
+import Base from "../layouts/Base.astro";
+
+// Source of truth: @byo-oss/core README.md and src/ at v0.2.0. Update with core, not from memory.
+const product = getProduct("core");
+
+const features = [
+  { title: "One event bus", text: "createEventBus turns a list of consumers into the one onEvent you pass to every BYO plugin. A consumer that throws is reported, and the next one still runs." },
+  { title: "One cron route", text: "sweepAll runs every plugin's background work in plugin order, inside a time budget you set, and tells you when to call again." },
+  { title: "One cleanup call", text: "deleteOrganizationData and deleteMemberData reach every plugin that stores per-organization or per-member data." },
+  { title: "Nothing is skipped", text: "A plugin that fails never stops the others. Cleanup runs all plugins, then throws a ByoFanOutError naming the ones that failed." },
+  { title: "Joins your transaction", text: "Core opens no transaction. Call the fan-out inside yours and every plugin's cleanup runs on it, and rolls back with it." },
+  { title: "A contract for plugin authors", text: "A plugin declares sweep and cleanup hooks under a byo key, and core reaches them. better-auth ignores the key." },
+];
+
+const steps = [
+  {
+    title: "Build one event bus",
+    text: "Pass the same onEvent to every BYO plugin that emits events.",
+    file: "lib/auth.ts",
+    code: `import { createEventBus } from "@byo-oss/core";
+
+const onEvent = createEventBus([
+  (event) => activity.record(event),
+  async (event) => {
+    if (event.type === "support.agent.replied" && event.userId) {
+      await auth.api.notify({ body: { userId: event.userId, type: event.type, title: "New reply" } });
+    }
+  },
+]);
+
+export const auth = betterAuth({
+  plugins: [support({ onEvent }), feedback({ onEvent })],
+});`,
+  },
+  {
+    title: "Add one cron route",
+    text: "Run it every minute from any scheduler, and protect it the way your scheduler expects.",
+    file: "app/api/cron/route.ts",
+    code: `import { sweepAll } from "@byo-oss/core";
+
+export async function GET() {
+  const result = await sweepAll(auth, { budgetMs: 20_000 });
+  return Response.json(result);
+}`,
+  },
+  {
+    title: "Wire the cleanup hooks",
+    text: "From the organization plugin's hooks, so every package cleans up when an organization or member goes.",
+    file: "lib/auth.ts",
+    code: `import { deleteMemberData, deleteOrganizationData } from "@byo-oss/core";
+
+organization({
+  organizationHooks: {
+    afterDeleteOrganization: async ({ organization }) => {
+      await deleteOrganizationData(auth, organization.id);
+    },
+    afterRemoveMember: async ({ member }) => {
+      await deleteMemberData(auth, { userId: member.userId, organizationId: member.organizationId });
+    },
+  },
+});`,
+  },
+];
+
+const authorCode = `import type { BetterAuthPlugin } from "better-auth";
+import type { ByoPlugin } from "@byo-oss/core";
+
+export const feedback = (options: FeedbackOptions = {}) =>
+  ({
+    id: "feedback",
+    endpoints: { /* ... */ },
+    byo: {
+      sweep: (auth) => processFeedbackDigests(auth),
+      deleteOrganizationData: async (auth, organizationId) => {
+        await deleteFeedbackOrgData(auth, organizationId);
+      },
+      deleteMemberData: async (auth, { userId, organizationId }) => {
+        await deleteFeedbackMemberData(auth, { userId, organizationId });
+      },
+    },
+  }) satisfies ByoPlugin<BetterAuthPlugin>;`;
+
+const guarantees = [
+  ["events", "In-process and best-effort. The bus never fails the request that emitted the event, and nothing is retried or stored."],
+  ["sweeps", "Core adds no guarantee of its own. Leases, retries and at-least-once delivery belong to each plugin's sweep."],
+  ["cleanup", "All plugins run, then it throws if any failed. Outside a transaction, the cleanups that succeeded stay done."],
+];
+
+const notThis = [
+  ["a scheduler", "You still need one cron that calls sweepAll."],
+  ["durable events", "No outbox, no retries, no cross-process delivery."],
+  ["user delete", "User data goes through foreign keys and each plugin's own databaseHooks. There is no user-delete fan-out."],
+  ["export, identity", "No data export fan-out, and no shared identify(request) helper yet."],
+];
+---
+
+<Base title="Core" description="The shared library for apps that run two or more BYO packages: one event bus, one cron route and one org-cleanup call. Not a plugin: no tables, no endpoints." current="core">
+  <div data-pagefind-body data-pagefind-meta="group:core">
+    <section class="section hero">
+      <div class="container">
+        <div class="hero-copy">
+          <nav aria-label="Breadcrumb" class="breadcrumb"><a href="/">byo.dev</a><span class="faint">/</span><span>core</span></nav>
+          <div class="meta-row">
+            <span class="muted">{product.pkg}</span>
+            {product.version ? <span class="badge badge-solid">v{product.version}</span> : <span class="badge badge-dashed">{product.status}</span>}
+            <span class="badge">library · shared</span>
+          </div>
+          <h1 class="h1">Core</h1>
+          <p class="tagline">The glue for apps that run two or more BYO packages.</p>
+          <p class="lead" style="margin: 0; max-width: 540px">
+            Core is not a feature. It is a small library that gives your BYO packages one event bus, one cron route and one org-cleanup call,
+            so you wire each once instead of once per package. It adds no tables and no endpoints, and nothing goes in <span class="mono">{"plugins: []"}</span>.
+            With a single BYO package you don't need it.
+          </p>
+          <InstallTabs pkg={product.pkg} />
+          <div class="btn-row">
+            <a href="/docs/core/quickstart" class="btn btn-solid">Read the docs</a>
+            <a href={product.repo} class="btn">GitHub ↗</a>
+            <a href="https://www.npmjs.com/package/@byo-oss/core" class="btn">npm ↗</a>
+          </div>
+        </div>
+
+        <div class="hero-art" data-pagefind-ignore>
+          <HeroArt variant="ambient" />
+          <Frame gaps={[{ side: "top", at: "30%" }, { side: "right", at: "72%" }]} innerStyle="display: flex; flex-direction: column">
+            <div class="art-code">
+              <CodeBlock code={steps[0].code} title={steps[0].file} />
+            </div>
+            <div class="mono faint art-foot">one onEvent · every BYO plugin</div>
+          </Frame>
+        </div>
+      </div>
+    </section>
+
+    <ReliesOn product={product} note={`peerDependencies · ${product.pkg} ${product.version ?? ""}`} />
+
+    <section class="section" aria-labelledby="features">
+      <div class="container">
+        <SectionHead index="01" label="what you get" title="Wire it once, not once per package." id="features">
+          Each BYO package that sends events, runs background work or stores per-organization data would otherwise need its own wiring.
+          Core reads the plugins you already pass to <span class="mono">{"betterAuth({ plugins })"}</span> and calls the hooks they declare.
+        </SectionHead>
+        <div class:list={["cells", cellsFor(features.length), "cells-lg"]} style="margin-top: 56px">
+          {
+            features.map((f, i) => (
+              <div class="cell">
+                <div class="cell-index">{String(i + 1).padStart(2, "0")}</div>
+                <h3 class="h3">{f.title}</h3>
+                <p class="body">{f.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="quickstart" class="section" aria-labelledby="qs">
+      <div class="container">
+        <SectionHead index="02" label="quickstart" title="Three steps." id="qs">
+          For an app that already runs two or more BYO packages.
+        </SectionHead>
+        <ol class="qs-list">
+          {
+            steps.map((s, i) => (
+              <li class="qs-step">
+                <div class="qs-text">
+                  <div class="mono faint" style="font-size: 12px">step {String(i + 1).padStart(2, "0")}</div>
+                  <h3 class="mono" style="margin: 10px 0 8px; font-size: 20px">{s.title}</h3>
+                  <p class="body">{s.text}</p>
+                </div>
+                <div class="qs-code">
+                  <CodeBlock code={s.code} title={s.file} />
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+        <a href="/docs/core/quickstart" class="btn" style="margin-top: 32px">Full quickstart in the docs →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="guarantees">
+      <div class="container">
+        <SectionHead index="03" label="guarantees" title="Best-effort events, all-plugins cleanup." id="guarantees" />
+        <div class:list={["cells", cellsFor(guarantees.length)]} style="margin-top: 48px">
+          {
+            guarantees.map(([label, text]) => (
+              <div class="cell" style="padding: 28px 24px 32px">
+                <div class="cell-index">{label}</div>
+                <p class="body">{text}</p>
+              </div>
+            ))
+          }
+        </div>
+        <a href="/docs/core/api" class="btn" style="margin-top: 32px">Server API →</a>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="authors">
+      <div class="container split">
+        <div class="split-text">
+          <SectionHead index="04" label="plugin authors" title="Declare hooks under byo." id="authors">
+            A plugin declares its sweep and cleanup hooks under a <span class="mono">byo</span> key, and core's helpers call them. better-auth ignores the key at runtime.
+          </SectionHead>
+          <ul class="arrow-list" style="margin-top: 24px">
+            <li>End the plugin with satisfies ByoPlugin&lt;BetterAuthPlugin&gt;</li>
+            <li>Every hook is optional: declare only what the plugin has</li>
+            <li>Read the adapter with getCurrentAdapter, so the hook joins the caller's transaction</li>
+            <li>Keep exporting your own cleanup functions and sweep endpoint</li>
+          </ul>
+        </div>
+        <div class="split-code">
+          <CodeBlock code={authorCode} title="src/index.ts" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="not">
+      <div class="container">
+        <SectionHead index="05" label="what this is not" title="Glue, not infrastructure." id="not">
+          Core does not replace a scheduler or a queue. There is also no exit to a third-party tool: remove it and each plugin keeps its own
+          sweep endpoint and cleanup functions, which you then call yourself.
+        </SectionHead>
+        <div class:list={["cells", cellsFor(notThis.length)]} style="margin-top: 48px">
+          {
+            notThis.map(([label, text]) => (
+              <div class="cell" style="padding: 28px 24px 32px">
+                <div class="cell-index">{label}</div>
+                <p class="body">{text}</p>
+              </div>
+            ))
+          }
+        </div>
+        <a href="/docs/core/introduction" class="btn" style="margin-top: 32px">Read the introduction →</a>
+      </div>
+    </section>
+  </div>
+
+  <nav aria-label="Other pages" class="container pager">
+    <a href="/mailer" class="pager-link"><span class="mono faint">← previous</span><span class="mono">Mailer</span></a>
+    <a href="/conventions" class="pager-link is-next"><span class="mono faint">next →</span><span class="mono">Conventions</span></a>
+  </nav>
+</Base>
+
+<style>
+  .art-code {
+    padding: 16px;
+    min-width: 0;
+  }
+
+  .art-foot {
+    margin-top: auto;
+    padding: 12px 16px;
+    font-size: 11px;
+    border-top: 1px solid var(--line);
+  }
+
+  .hero-art {
+    flex: 1 1 440px;
+    min-width: 0;
+  }
+
+  .qs-list {
+    margin: 56px 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--line);
+  }
+
+  .qs-step {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px 48px;
+    padding: 36px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .qs-text {
+    flex: 1 1 280px;
+    min-width: 0;
+  }
+
+  .qs-code {
+    flex: 2 1 520px;
+    min-width: 0;
+  }
+
+  .split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 56px;
+    align-items: flex-start;
+  }
+
+  .split-text {
+    flex: 1 1 360px;
+    min-width: 0;
+  }
+
+  .split-code {
+    flex: 1 1 560px;
+    min-width: 0;
+  }
+</style>
